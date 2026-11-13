@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PijarDashboardController; // <-- 1. Tambahkan ini di baris ke-4
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -27,7 +28,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/home', fn() => redirect()->route('dashboard'));
 
-    // Placeholder Dashboard dengan Tombol Logout untuk Demo
+    // Placeholder Dashboard sementara untuk role selain PIJAR
     $dashboardView = function ($title) {
         return '
             <div style="font-family: sans-serif; padding: 40px;">
@@ -45,6 +46,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/kaprodi/dashboard', fn() => $dashboardView('Dashboard Kaprodi'))->name('kaprodi.dashboard');
     Route::get('/suar/dashboard', fn() => $dashboardView('Dashboard Admin SUAR'))->name('suar.dashboard');
-    Route::get('/pijar/dashboard', fn() => $dashboardView('Dashboard Admin PIJAR'))->name('pijar.dashboard');
+    
+    // 2. Pastikan baris rute PIJAR (sekitar baris ke-47) menjadi seperti ini:
+    Route::get('/pijar/dashboard', [PijarDashboardController::class, 'index'])->name('pijar.dashboard');
+    
     Route::get('/kerma/dashboard', fn() => $dashboardView('Dashboard Admin Kerma'))->name('kerma.dashboard');
 });

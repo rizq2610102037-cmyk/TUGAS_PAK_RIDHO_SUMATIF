@@ -39,6 +39,11 @@
                     @if($menungguApprove > 0)
                         <span class="absolute top-1 right-1 w-2 h-2 bg-[#F57C00] rounded-full"></span>
                     @endif
+
+                    <button onclick="document.getElementById('modalTambah').classList.remove('hidden')" class="flex items-center gap-2 bg-[#F5A642] hover:bg-[#F57C00] text-gray-900 hover:text-white font-bold text-xs px-4 py-2 rounded-full transition cursor-pointer shadow-sm">
+                            <span class="w-4 h-4 rounded-full bg-gray-900 text-white flex items-center justify-center text-[10px]">+</span>
+                            Tambah Jadwal Cepat
+                    </button>
                 </button>
             </div>
         </div>
@@ -52,6 +57,13 @@
 
     {{-- MAIN CONTAINER --}}
     <div class="flex-1 p-4 md:p-6 max-w-[1440px] w-full mx-auto space-y-6">
+
+        @if (session('success'))
+    <div class="bg-[#D5F5E3] border border-[#0A4D29] text-[#0A4D29] px-4 py-3 rounded-xl text-xs font-bold flex justify-between items-center shadow-sm">
+        <span>✅ {{ session('success') }}</span>
+        <button onclick="this.parentElement.remove()" class="text-sm font-extrabold cursor-pointer">✕</button>
+    </div>
+        @endif
 
         {{-- BAGIAN ATAS: SIDEBAR + KONTEN UTAMA --}}
         <div class="flex flex-col lg:flex-row gap-6 items-start">
@@ -436,20 +448,25 @@
                                         </span>
                                     @endif
                                 </td>
+                                
                                 <td class="py-4 px-4 text-center">
-                                    @if ($item->status === 'pending_approval')
-                                        <button class="bg-[#B7F4D1] hover:bg-[#9ae8bc] text-[#0A4D29] font-bold px-3.5 py-1 rounded-full text-[11px] transition cursor-pointer">
+                                    <button 
+                                        type="button"
+                                        onclick="openEditModal(this)"
+                                        data-id="{{ $item->id }}"
+                                        data-mk="{{ $item->course->nama_mk }}"
+                                        data-room="{{ $item->room_id }}"
+                                        data-dosen="{{ $item->dosen_pengajar }}"
+                                        data-status="{{ $item->status }}"
+                                        class="bg-[#B7F4D1] hover:bg-[#9ae8bc] text-[#0A4D29] font-bold px-3.5 py-1 rounded-full text-[11px] transition cursor-pointer">
+                                        @if ($item->status === 'pending_approval')
                                             Review Pengajuan
-                                        </button>
-                                    @elseif ($item->status === 'approved')
-                                        <button class="bg-[#B7F4D1] hover:bg-[#9ae8bc] text-[#0A4D29] font-bold px-5 py-1 rounded-full text-[11px] transition cursor-pointer">
+                                        @elseif ($item->status === 'approved')
                                             Lihat Detail
-                                        </button>
-                                    @else
-                                        <button class="bg-[#B7F4D1] hover:bg-[#9ae8bc] text-[#0A4D29] font-bold px-4 py-1 rounded-full text-[11px] transition cursor-pointer">
+                                        @else
                                             Tinjau Revisi
-                                        </button>
-                                    @endif
+                                        @endif
+                                    </button>
                                 </td>
                             </tr>
                         @empty
@@ -465,6 +482,116 @@
         </section>
 
     </div>
+
+{{-- MODAL TAMBAH JADWAL CEPAT --}}
+    <div id="modalTambah" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-lg font-extrabold text-[#0A4D29]">Tambah Jadwal Cepat</h3>
+                <button onclick="document.getElementById('modalTambah').classList.add('hidden')" class="text-gray-500 hover:text-gray-800 font-bold cursor-pointer">✕</button>
+            </div>
+            <form action="{{ route('pijar.schedules.store') }}" method="POST" class="space-y-3 text-xs">
+                @csrf
+                <div>
+                    <label class="block font-bold mb-1">Mata Kuliah</label>
+                    <select name="course_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                        @foreach($courses as $course)
+                            <option value="{{ $course->id }}">{{ $course->kode_mk }} - {{ $course->nama_mk }} ({{ $course->prodi }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Ruang Kuliah</label>
+                    <select name="room_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                        @foreach($rooms as $room)
+                            <option value="{{ $room->id }}">{{ $room->kode_ruang }} - {{ $room->nama_ruang }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Dosen Pengajar</label>
+                    <input type="text" name="dosen_pengajar" required placeholder="Nama lengkap & gelar dosen" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold mb-1">Peran Pengaju</label>
+                        <input type="text" name="peran_pengaju" value="Admin PIJAR" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-1">Status Awal</label>
+                        <select name="status" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                            <option value="approved">Approved</option>
+                            <option value="pending_approval">Pending Approval</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 pt-1">
+                    <input type="checkbox" name="is_external" id="is_external" class="rounded">
+                    <label for="is_external" class="font-medium">Termasuk Jadwal Pihak Eksternal / Praktisi</label>
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t">
+                    <button type="button" onclick="document.getElementById('modalTambah').classList.add('hidden')" class="px-4 py-2 rounded-lg bg-gray-200 font-bold cursor-pointer">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-[#0A4D29] text-white font-bold cursor-pointer">Simpan Jadwal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- MODAL REVIEW & EDIT JADWAL --}}
+    <div id="modalEdit" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-lg font-extrabold text-[#0A4D29]">Review & Edit Jadwal</h3>
+                <button onclick="document.getElementById('modalEdit').classList.add('hidden')" class="text-gray-500 hover:text-gray-800 font-bold cursor-pointer">✕</button>
+            </div>
+            <form id="formEdit" method="POST" class="space-y-3 text-xs">
+                @csrf
+                @method('PUT')
+                <div>
+                    <label class="block font-bold text-gray-500 mb-1">Mata Kuliah</label>
+                    <input type="text" id="edit_mk" readonly class="w-full bg-gray-100 border border-gray-300 rounded-lg px-3 py-2 font-bold text-gray-700">
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Ruang Kuliah</label>
+                    <select name="room_id" id="edit_room" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                        @foreach($rooms as $room)
+                            <option value="{{ $room->id }}">{{ $room->kode_ruang }} - {{ $room->nama_ruang }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Dosen Pengajar</label>
+                    <input type="text" name="dosen_pengajar" id="edit_dosen" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Keputusan Status</label>
+                    <select name="status" id="edit_status" class="w-full border border-gray-300 rounded-lg px-3 py-2 font-bold">
+                        <option value="pending_approval">Pending Approval</option>
+                        <option value="approved">Approved (Setujui)</option>
+                        <option value="revision_requested">Revision Requested (Minta Revisi)</option>
+                        <option value="cancelled">Cancelled (Batalkan)</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t">
+                    <button type="button" onclick="document.getElementById('modalEdit').classList.add('hidden')" class="px-4 py-2 rounded-lg bg-gray-200 font-bold cursor-pointer">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-[#F57C00] text-white font-bold cursor-pointer">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    function openEditModal(button) {
+        const { id, mk, room, dosen, status } = button.dataset;
+
+        document.getElementById('formEdit').action = '/pijar/schedules/' + id;
+        document.getElementById('edit_mk').value = mk;
+        document.getElementById('edit_room').value = room;
+        document.getElementById('edit_dosen').value = dosen;
+        document.getElementById('edit_status').value = status;
+        document.getElementById('modalEdit').classList.remove('hidden');
+    }
+</script>
 
 </body>
 </html>

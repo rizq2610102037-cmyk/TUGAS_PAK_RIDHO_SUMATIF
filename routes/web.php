@@ -51,4 +51,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/pijar/dashboard', [PijarDashboardController::class, 'index'])->name('pijar.dashboard');
     
     Route::get('/kerma/dashboard', fn() => $dashboardView('Dashboard Admin Kerma'))->name('kerma.dashboard');
+
+    Route::get('/pijar/dashboard', [PijarDashboardController::class, 'index'])->name('pijar.dashboard');
+    Route::post('/pijar/schedules', [PijarDashboardController::class, 'store'])->name('pijar.schedules.store');
+    Route::put('/pijar/schedules/{schedule}', [PijarDashboardController::class, 'update'])->name('pijar.schedules.update');
 });

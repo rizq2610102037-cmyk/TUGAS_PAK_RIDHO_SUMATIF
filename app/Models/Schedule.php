@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class Schedule extends Model
 {
     protected $fillable = [
-        'course_id', 'room_id', 'submitted_by', 'dosen_pengajar',
-        'peran_pengaju', 'tanggal_pengajuan', 'status', 'is_external'
-    ];
+    'course_id', 'room_id', 'submitted_by', 'dosen_pengajar',
+    'peran_pengaju', 'kelas', 'hari_sesi', 'waktu_sesi',
+    'catatan_pengaju', 'catatan_admin', 'tanggal_pengajuan',
+    'status', 'is_external'
+];
 
     protected $casts = [
         'tanggal_pengajuan' => 'datetime',

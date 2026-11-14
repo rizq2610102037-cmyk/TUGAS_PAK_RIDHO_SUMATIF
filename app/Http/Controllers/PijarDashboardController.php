@@ -53,7 +53,7 @@ class PijarDashboardController extends Controller
 
         $monthlyPersentase = $monthlyTotal > 0 ? round(($monthlyTerlaksana / $monthlyTotal) * 100) : 0;
 
-        // 5. Data Dropdown untuk Modal Edit & Tambah Jadwal
+        // 5. Data Dropdown untuk Modal
         $rooms   = Room::all();
         $courses = Course::all();
 
@@ -83,6 +83,40 @@ class PijarDashboardController extends Controller
         ));
     }
 
+    // Halaman Manajemen Jadwal & Approval (Diletakkan setelah method index)
+    public function manajemenJadwal(Request $request)
+    {
+        $search = $request->input('search');
+        $status = $request->input('status');
+
+        $rooms   = Room::all();
+        $courses = Course::all();
+
+        $totalJadwal     = Schedule::count();
+        $menungguApprove = Schedule::where('status', 'pending_approval')->count();
+        $jadwalDisetujui = Schedule::where('status', 'approved')->count();
+        $jadwalRevisi    = Schedule::whereIn('status', ['revision_requested', 'cancelled'])->count();
+
+        $schedules = Schedule::with(['course', 'room'])
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('dosen_pengajar', 'like', "%{$search}%")
+                      ->orWhereHas('course', fn($cq) => $cq->where('nama_mk', 'like', "%{$search}%")->orWhere('kode_mk', 'like', "%{$search}%")->orWhere('prodi', 'like', "%{$search}%"))
+                      ->orWhereHas('room', fn($rq) => $rq->where('kode_ruang', 'like', "%{$search}%"));
+                });
+            })
+            ->when($status, fn($query, $status) => $query->where('status', $status))
+            ->orderByDesc('tanggal_pengajuan')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('pijar.manajemen-jadwal', compact(
+            'schedules', 'rooms', 'courses',
+            'totalJadwal', 'menungguApprove', 'jadwalDisetujui', 'jadwalRevisi',
+            'search', 'status'
+        ));
+    }
+
     // Simpan Tambah Jadwal Cepat
     public function store(Request $request)
     {
@@ -105,24 +139,87 @@ class PijarDashboardController extends Controller
             'is_external'       => $request->has('is_external'),
         ]);
 
-        return redirect()->route('pijar.dashboard')->with('success', 'Jadwal baru berhasil ditambahkan ke database!');
+        return back()->with('success', 'Jadwal baru berhasil ditambahkan ke database!');
     }
 
-    // Update / Review Pengajuan Jadwal dari Tabel
+    // Update / Review Pengajuan Jadwal
     public function update(Request $request, Schedule $schedule)
     {
         $request->validate([
             'room_id'        => 'required|exists:rooms,id',
             'dosen_pengajar' => 'required|string|max:255',
             'status'         => 'required|in:pending_approval,approved,revision_requested,cancelled',
+            'catatan_admin'  => 'nullable|string',
         ]);
 
         $schedule->update([
             'room_id'        => $request->room_id,
             'dosen_pengajar' => $request->dosen_pengajar,
             'status'         => $request->status,
+            'catatan_admin'  => $request->catatan_admin,
         ]);
 
-        return redirect()->route('pijar.dashboard')->with('success', 'Status & detail jadwal berhasil diperbarui!');
+        return back()->with('success', 'Keputusan persetujuan jadwal berhasil disimpan secara permanen!');
+    }
+
+    // Halaman Monitoring Jadwal Pihak Eksternal
+    public function jadwalEksternal(Request $request)
+    {
+        $search = $request->input('search');
+        $prodi  = $request->input('prodi');
+        $status = $request->input('status_eksternal');
+        $mitra  = $request->input('mitra');
+
+        $baseQuery = Schedule::where('is_external', true);
+
+        $totalEksternal   = (clone $baseQuery)->count();
+        $readyToTeach     = (clone $baseQuery)->where('status_eksternal', 'ready_to_teach')->count();
+        $sedangBerlangsung = (clone $baseQuery)->where('status_eksternal', 'ongoing')->count();
+        $sudahTerlaksana  = (clone $baseQuery)->where('status_eksternal', 'completed')->count();
+        $belumTerlaksana  = (clone $baseQuery)->where('status_eksternal', 'pending')->count();
+
+        $persenTerlaksana = $totalEksternal > 0 ? round(($sudahTerlaksana / $totalEksternal) * 100, 1) : 0;
+        $persenKuota      = $totalEksternal > 0 ? round((($totalEksternal - $belumTerlaksana) / $totalEksternal) * 100, 1) : 0;
+
+        $listProdi = Course::distinct()->pluck('prodi');
+        $listMitra = Schedule::where('is_external', true)->whereNotNull('mitra_instansi')->distinct()->pluck('mitra_instansi');
+
+        $externalSchedules = Schedule::with(['course', 'room'])
+            ->where('is_external', true)
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('dosen_pengajar', 'like', "%{$search}%")
+                      ->orWhere('mitra_instansi', 'like', "%{$search}%")
+                      ->orWhereHas('course', fn($cq) => $cq->where('nama_mk', 'like', "%{$search}%")->orWhere('kode_mk', 'like', "%{$search}%"));
+                });
+            })
+            ->when($prodi, fn($q, $prodi) => $q->whereHas('course', fn($cq) => $cq->where('prodi', $prodi)))
+            ->when($status, fn($q, $status) => $q->where('status_eksternal', $status))
+            ->when($mitra, fn($q, $mitra) => $q->where('mitra_instansi', $mitra))
+            ->orderByDesc('tanggal_pengajuan')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('pijar.jadwal-eksternal', compact(
+            'externalSchedules', 'totalEksternal', 'readyToTeach',
+            'sedangBerlangsung', 'sudahTerlaksana', 'belumTerlaksana',
+            'persenTerlaksana', 'persenKuota', 'listProdi', 'listMitra',
+            'search', 'prodi', 'status', 'mitra'
+        ));
+    }
+
+    // Update Status Pengajaran Eksternal dari Panel Kanan
+    public function updateStatusEksternal(Request $request, Schedule $schedule)
+    {
+        $request->validate([
+            'status_eksternal' => 'required|in:ready_to_teach,ongoing,completed,pending',
+        ]);
+
+        $schedule->update([
+            'status_eksternal' => $request->status_eksternal,
+            'status_bap'       => $request->status_eksternal === 'completed' ? 'Terverifikasi BAP & e-Presensi' : $schedule->status_bap,
+        ]);
+
+        return back()->with('success', 'Status pengajaran praktisi eksternal berhasil diperbarui!');
     }
 }

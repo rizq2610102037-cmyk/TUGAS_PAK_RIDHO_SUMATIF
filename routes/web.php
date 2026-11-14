@@ -55,4 +55,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/pijar/dashboard', [PijarDashboardController::class, 'index'])->name('pijar.dashboard');
     Route::post('/pijar/schedules', [PijarDashboardController::class, 'store'])->name('pijar.schedules.store');
     Route::put('/pijar/schedules/{schedule}', [PijarDashboardController::class, 'update'])->name('pijar.schedules.update');
+    Route::get('/pijar/dashboard', [PijarDashboardController::class, 'index'])->name('pijar.dashboard');
+    Route::get('/pijar/manajemen-jadwal', [PijarDashboardController::class, 'manajemenJadwal'])->name('pijar.manajemen-jadwal');
+    Route::post('/pijar/schedules', [PijarDashboardController::class, 'store'])->name('pijar.schedules.store');
+    Route::put('/pijar/schedules/{schedule}', [PijarDashboardController::class, 'update'])->name('pijar.schedules.update');
+    Route::get('/pijar/jadwal-eksternal', [PijarDashboardController::class, 'jadwalEksternal'])->name('pijar.jadwal-eksternal');
+    Route::patch('/pijar/jadwal-eksternal/{schedule}/status', [PijarDashboardController::class, 'updateStatusEksternal'])->name('pijar.jadwal-eksternal.status');
 });

@@ -39,11 +39,6 @@
                     @if($menungguApprove > 0)
                         <span class="absolute top-1 right-1 w-2 h-2 bg-[#F57C00] rounded-full"></span>
                     @endif
-
-                    <button onclick="document.getElementById('modalTambah').classList.remove('hidden')" class="flex items-center gap-2 bg-[#F5A642] hover:bg-[#F57C00] text-gray-900 hover:text-white font-bold text-xs px-4 py-2 rounded-full transition cursor-pointer shadow-sm">
-                            <span class="w-4 h-4 rounded-full bg-gray-900 text-white flex items-center justify-center text-[10px]">+</span>
-                            Tambah Jadwal Cepat
-                    </button>
                 </button>
             </div>
         </div>
@@ -86,12 +81,12 @@
                         Jadwal Pihak Eksternal
                     </a>
 
-                    <a href="#" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
+                    <a href="{{ route('pijar.manajemen-akun') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                         Manajemen Akun
                     </a>
 
-                    <a href="#" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
+                    <a href="{{ route('pijar.rekap-pengajaran') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         Rekap Pengajaran
                     </a>
@@ -135,10 +130,6 @@
                             <button onclick="window.print()" class="flex items-center gap-2 bg-[#E8F5E9] hover:bg-white text-[#0A4D29] font-bold text-xs px-4 py-2 rounded-full transition cursor-pointer shadow-sm">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
                                 Cetak Ringkasan Eksekutif
-                            </button>
-                            <button class="flex items-center gap-2 bg-[#F5A642] hover:bg-[#F57C00] text-gray-900 hover:text-white font-bold text-xs px-4 py-2 rounded-full transition cursor-pointer shadow-sm">
-                                <span class="w-4 h-4 rounded-full bg-gray-900 text-white flex items-center justify-center text-[10px]">+</span>
-                                Tambah Jadwal Cepat
                             </button>
                         </div>
                     </div>
@@ -480,61 +471,6 @@
                 </table>
             </div>
         </section>
-
-    </div>
-
-{{-- MODAL TAMBAH JADWAL CEPAT --}}
-    <div id="modalTambah" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-lg font-extrabold text-[#0A4D29]">Tambah Jadwal Cepat</h3>
-                <button onclick="document.getElementById('modalTambah').classList.add('hidden')" class="text-gray-500 hover:text-gray-800 font-bold cursor-pointer">✕</button>
-            </div>
-            <form action="{{ route('pijar.schedules.store') }}" method="POST" class="space-y-3 text-xs">
-                @csrf
-                <div>
-                    <label class="block font-bold mb-1">Mata Kuliah</label>
-                    <select name="course_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                        @foreach($courses as $course)
-                            <option value="{{ $course->id }}">{{ $course->kode_mk }} - {{ $course->nama_mk }} ({{ $course->prodi }})</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block font-bold mb-1">Ruang Kuliah</label>
-                    <select name="room_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                        @foreach($rooms as $room)
-                            <option value="{{ $room->id }}">{{ $room->kode_ruang }} - {{ $room->nama_ruang }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block font-bold mb-1">Dosen Pengajar</label>
-                    <input type="text" name="dosen_pengajar" required placeholder="Nama lengkap & gelar dosen" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-bold mb-1">Peran Pengaju</label>
-                        <input type="text" name="peran_pengaju" value="Admin PIJAR" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                    </div>
-                    <div>
-                        <label class="block font-bold mb-1">Status Awal</label>
-                        <select name="status" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                            <option value="approved">Approved</option>
-                            <option value="pending_approval">Pending Approval</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2 pt-1">
-                    <input type="checkbox" name="is_external" id="is_external" class="rounded">
-                    <label for="is_external" class="font-medium">Termasuk Jadwal Pihak Eksternal / Praktisi</label>
-                </div>
-                <div class="flex justify-end gap-2 pt-3 border-t">
-                    <button type="button" onclick="document.getElementById('modalTambah').classList.add('hidden')" class="px-4 py-2 rounded-lg bg-gray-200 font-bold cursor-pointer">Batal</button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-[#0A4D29] text-white font-bold cursor-pointer">Simpan Jadwal</button>
-                </div>
-            </form>
-        </div>
     </div>
 
     {{-- MODAL REVIEW & EDIT JADWAL --}}

@@ -71,12 +71,12 @@
                         Jadwal Pihak Eksternal
                     </a>
 
-                    <a href="#" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
+                    <a href="{{ route('pijar.manajemen-akun') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                         Manajemen Akun
                     </a>
 
-                    <a href="#" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
+                    <a href="{{ route('pijar.rekap-pengajaran') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         Rekap Pengajaran
                     </a>
@@ -215,8 +215,43 @@
                                                 data-roomkapasitas="{{ $item->room->kapasitas }}"
                                                 data-catatan="{{ $item->catatan_pengaju ?? 'Pengajuan jadwal perkuliahan reguler sesuai kurikulum program studi.' }}"
                                                 data-status="{{ $item->status }}"
+                                                data-praktisi="{{ $item->praktisi_nama ?? ($item->is_external ? $item->dosen_pengajar : 'Perkuliahan Reguler (Non-Praktisi)') }}"
+                                                data-pertemuanke="{{ $item->pertemuan_ke ?? 1 }}"
+                                                data-kuotamk="{{ $kuotaMk[$item->course_id] ?? 0 }}"
+                                                data-kuotaprodi="{{ $kuotaProdi[$item->course->prodi] ?? 0 }}"
+                                                data-dokumen="{{ $item->dokumen_bahan_ajar ? asset('storage/' . $item->dokumen_bahan_ajar) : '' }}"
+                                                data-iks="{{ $item->nomor_iks ?? '' }}"
+                                                data-presensi="{{ $item->status_presensi_pijar ?? 'Formulir Diberikan' }}"
                                                 class="bg-[#0A4D29] hover:bg-[#F57C00] text-white font-bold px-4 py-1.5 rounded-lg text-[11px] transition cursor-pointer shadow-xs">
                                                 Periksa & Putuskan
+
+                                                {{-- Blok Kepatuhan SOP PRU/SPMI/SD-BM10 --}}
+                                                    <div class="bg-[#FAFCEB] border border-[#0A4D29]/20 rounded-xl p-4 mt-4 text-xs space-y-2.5">
+                                                        <div class="flex items-center justify-between">
+                                                            <p class="text-[10px] font-extrabold uppercase tracking-wider text-[#0A4D29]">KONTROL KUOTA & DOKUMEN SOP PIJAR (SD-BM-10)</p>
+                                                            <span class="bg-[#D5F5E3] text-[#0A4D29] font-bold px-2 py-0.5 rounded text-[10px]">Pertemuan ke-<span id="modal_pertemuan_ke">1</span></span>
+                                                        </div>
+                                                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                                                            <div class="bg-white border border-gray-200/80 rounded-lg p-2.5">
+                                                                <p class="text-[10px] text-gray-500">Kuota MK (Maks 7x)</p>
+                                                                <p class="font-extrabold text-gray-900 mt-0.5"><span id="modal_kuota_mk">1</span> / 7 Pertemuan</p>
+                                                            </div>
+                                                            <div class="bg-white border border-gray-200/80 rounded-lg p-2.5">
+                                                                <p class="text-[10px] text-gray-500">Kuota Prodi/Tahun (Maks 28x)</p>
+                                                                <p class="font-extrabold text-[#0A4D29] mt-0.5"><span id="modal_kuota_prodi">1</span> / 28 Pertemuan</p>
+
+                                                                
+                                                            </div>
+
+                                                            {{-- INI BAGIAN LANGKAH 2 --}}
+                                                            <div class="bg-white border border-gray-200/80 rounded-lg p-2.5">
+                                                                <p class="text-[10px] text-gray-500">Berkas RPS / RPS Mini</p>
+                                                                <a id="modal_link_dokumen" href="#" target="_blank" class="font-bold text-[#F57C00] hover:underline mt-0.5 inline-block">
+                                                                    📄 Unduh / Lihat Berkas
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                             </button>
                                         </td>
                                     </tr>
@@ -452,7 +487,70 @@
         </div>
     </div>
 
+    {{-- MODAL TAMBAH JADWAL BARU --}}
+    <div id="modalTambah" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-lg font-extrabold text-[#0A4D29]">Tambah Jadwal Kuliah / Praktisi</h3>
+                <button type="button" onclick="document.getElementById('modalTambah').classList.add('hidden')" class="text-gray-400 hover:text-gray-700 font-bold cursor-pointer">✕</button>
+            </div>
+            <form action="{{ route('pijar.schedules.store') }}" method="POST" enctype="multipart/form-data" class="space-y-3 text-xs">
+                @csrf
+                <div>
+                    <label class="block font-bold mb-1">Mata Kuliah</label>
+                    <select name="course_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                        @foreach($courses as $c)
+                            <option value="{{ $c->id }}">{{ $c->kode_mk }} - {{ $c->nama_mk }} ({{ $c->prodi }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Ruang Kelas</label>
+                    <select name="room_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                        @foreach($rooms as $r)
+                            <option value="{{ $r->id }}">{{ $r->kode_ruang }} (Kapasitas {{ $r->kapasitas }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Nama Dosen / Praktisi Pengajar</label>
+                    <input type="text" name="dosen_pengajar" required placeholder="Contoh: Budi Santoso, S.Kom., M.T." class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold mb-1">Peran Pengaju</label>
+                        <select name="peran_pengaju" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                            <option value="Kaprodi">Kaprodi</option>
+                            <option value="Admin PIJAR">Admin PIJAR</option>
+                            <option value="Admin SUAR">Admin SUAR</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-1">Status Awal</label>
+                        <select name="status" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                            <option value="pending_approval">Pending Approval</option>
+                            <option value="approved">Approved</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Unggah Berkas RPS / RPS Mini (PDF/PPT/DOCX)</label>
+                    <input type="file" name="dokumen_bahan_ajar" accept=".pdf,.doc,.docx,.ppt,.pptx" class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-xs bg-gray-50">
+                </div>
+                <div class="flex items-center gap-2 pt-1">
+                    <input type="checkbox" name="is_external" id="is_external_mj" value="1" class="rounded text-[#0A4D29]">
+                    <label for="is_external_mj" class="font-semibold text-gray-700">Tandai sebagai Jadwal Pihak Eksternal / Praktisi</label>
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t">
+                    <button type="button" onclick="document.getElementById('modalTambah').classList.add('hidden')" class="px-4 py-2 rounded-lg bg-gray-200 font-bold cursor-pointer">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-[#0A4D29] text-white font-bold cursor-pointer">Simpan Jadwal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <script>
+
         function openApprovalModal(btn) {
             const d = btn.dataset;
 
@@ -471,9 +569,11 @@
             document.getElementById('modal_ruang_info').textContent = d.roomkode;
             document.getElementById('modal_ruang_kapasitas').textContent = 'Kapasitas: ' + d.roomkapasitas + ' Kursi';
             document.getElementById('modal_catatan_pengaju').textContent = d.catatan;
-
             document.getElementById('input_dosen').value = d.dosen;
             document.getElementById('input_room_id').value = d.roomid;
+            document.getElementById('modal_pertemuan_ke').textContent = d.pertemuanke;
+            document.getElementById('modal_kuota_mk').textContent = d.kuotamk;
+            document.getElementById('modal_kuota_prodi').textContent = d.kuotaprodi;
 
             const badge = document.getElementById('modal_badge_status');
             if (d.status === 'approved') {
@@ -490,6 +590,19 @@
                 badge.textContent = '● Menunggu Verifikasi Admin';
             }
 
+            const docLink = document.getElementById('modal_link_dokumen');
+                    if (d.dokumen) {
+                        docLink.href = d.dokumen;
+                        docLink.textContent = '📄 Buka File RPS / Bahan Ajar';
+                        docLink.classList.remove('pointer-events-none', 'text-gray-400');
+                        docLink.classList.add('text-[#F57C00]');
+                    } else {
+                        docLink.href = '#';
+                        docLink.textContent = 'Belum Ada File Diunggah';
+                        docLink.classList.add('pointer-events-none', 'text-gray-400');
+                        docLink.classList.remove('text-[#F57C00]');
+                    }
+            
             document.getElementById('modalApproval').classList.remove('hidden');
         }
 

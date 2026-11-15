@@ -61,4 +61,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/pijar/schedules/{schedule}', [PijarDashboardController::class, 'update'])->name('pijar.schedules.update');
     Route::get('/pijar/jadwal-eksternal', [PijarDashboardController::class, 'jadwalEksternal'])->name('pijar.jadwal-eksternal');
     Route::patch('/pijar/jadwal-eksternal/{schedule}/status', [PijarDashboardController::class, 'updateStatusEksternal'])->name('pijar.jadwal-eksternal.status');
-});
+    Route::get('/pijar/manajemen-akun', [PijarDashboardController::class, 'manajemenAkun'])->name('pijar.manajemen-akun');
+    Route::post('/pijar/manajemen-akun', [PijarDashboardController::class, 'storeUser'])->name('pijar.users.store');
+    Route::put('/pijar/manajemen-akun/{user}', [PijarDashboardController::class, 'updateUser'])->name('pijar.users.update');
+    Route::get('/pijar/rekap-pengajaran', [PijarDashboardController::class, 'rekapPengajaran'])->name('pijar.rekap-pengajaran');
+    Route::get('/pijar/rekap-pengajaran/export', [PijarDashboardController::class, 'exportRekapExcel'])->name('pijar.rekap-pengajaran.export');
+    });

@@ -8,9 +8,13 @@ class Schedule extends Model
 {
     protected $fillable = [
     'course_id', 'room_id', 'submitted_by', 'dosen_pengajar',
-    'peran_pengaju', 'kelas', 'hari_sesi', 'waktu_sesi',
-    'catatan_pengaju', 'catatan_admin', 'tanggal_pengajuan',
-    'status', 'is_external'
+    'praktisi_nama', 'mitra_instansi', 'jabatan_praktisi', 'peran_pengaju',
+    'kelas', 'pertemuan_ke', 'hari_sesi', 'waktu_sesi',
+    'catatan_pengaju', 'catatan_admin', 'dokumen_bahan_ajar',
+    'nomor_iks', 'status_presensi_pijar', 'tautan_evaluasi',
+    'tanggal_pengajuan', 'status', 'status_eksternal',
+    'status_honorarium', 'status_bap', 'pic_akademik', 'pic_kontak',
+    'tautan_zoom', 'is_external'
 ];
 
     protected $casts = [

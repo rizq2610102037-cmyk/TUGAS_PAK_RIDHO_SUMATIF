@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PijarDashboardController; // <-- 1. Tambahkan ini di baris ke-4
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SuarDashboardController;   
 
 Route::get('/', fn() => redirect('/login'));
 
@@ -62,4 +63,12 @@ Route::middleware('auth')->group(function () {
     Route::put('/pijar/manajemen-akun/{user}', [PijarDashboardController::class, 'updateUser'])->name('pijar.users.update');
     Route::get('/pijar/rekap-pengajaran', [PijarDashboardController::class, 'rekapPengajaran'])->name('pijar.rekap-pengajaran');
     Route::get('/pijar/rekap-pengajaran/export', [PijarDashboardController::class, 'exportRekapExcel'])->name('pijar.rekap-pengajaran.export');
+    // Portal Admin SUAR
+        Route::get('/suar/dashboard', [SuarDashboardController::class, 'index'])->name('suar.dashboard');
+        Route::put('/suar/schedules/{schedule}/assign', [SuarDashboardController::class, 'assignPractitioner'])->name('suar.schedules.assign');
+
+        Route::get('/suar/praktisi', [SuarDashboardController::class, 'praktisi'])->name('suar.praktisi');
+        Route::post('/suar/praktisi', [SuarDashboardController::class, 'storePractitioner'])->name('suar.praktisi.store');
+        Route::put('/suar/praktisi/{practitioner}', [SuarDashboardController::class, 'updatePractitioner'])->name('suar.praktisi.update');
+        Route::delete('/suar/praktisi/{practitioner}', [SuarDashboardController::class, 'destroyPractitioner'])->name('suar.praktisi.destroy');
     });

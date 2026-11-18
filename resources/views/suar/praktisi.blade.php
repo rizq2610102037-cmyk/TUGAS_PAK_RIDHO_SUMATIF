@@ -12,7 +12,7 @@
     <header class="w-full flex flex-col md:flex-row shadow-sm sticky top-0 z-30">
         <div class="w-full md:w-3/4 bg-[#0A4D29] px-6 py-4 flex items-center justify-between gap-4">
             <div>
-                <p class="text-[11px] text-[#B7F4D1] font-semibold">Portal Admin SUAR &rsaquo; Direktori Praktisi</p>
+                <p class="text-[11px] text-[#B7F4D1] font-semibold">Portal Admin Terpadu &rsaquo; Direktori Praktisi SUAR</p>
                 <h1 class="text-white text-xl font-extrabold tracking-tight">Manajemen Data & Kompetensi Praktisi</h1>
             </div>
 
@@ -44,42 +44,13 @@
             </div>
         @endif
 
-        <div class="flex flex-col lg:flex-row gap-6 items-start">
+        <div class="flex flex-col lg:flex-row gap-6 items-start w-full">
 
-            {{-- SIDEBAR MENU ADMIN SUAR --}}
-            <aside class="w-full lg:w-64 bg-[#0A4D29] rounded-2xl p-4 text-white flex flex-col justify-between lg:min-h-[760px] shrink-0 shadow-md">
-                <div class="space-y-4">
-                    <div class="px-3 py-2 bg-white/10 rounded-xl">
-                        <p class="text-[10px] uppercase tracking-wider text-[#B7F4D1] font-bold">UNIT AKADEMIK & INDUSTRI</p>
-                        <p class="text-sm font-extrabold text-white">Admin SUAR</p>
-                    </div>
-
-                    <nav class="space-y-2">
-                        <a href="{{ route('suar.dashboard') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                            Pengajuan & Penugasan
-                        </a>
-
-                        <a href="{{ route('suar.praktisi') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[#B7F4D1] text-[#0A4D29] font-bold text-sm shadow-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                            Data & Kompetensi Praktisi
-                        </a>
-                    </nav>
-                </div>
-
-                <div class="pt-8 mt-8 border-t border-white/15 space-y-2">
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-[#B7F4D1] hover:bg-red-500/20 hover:text-white transition text-sm cursor-pointer text-left">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                            Keluar
-                        </button>
-                    </form>
-                </div>
-            </aside>
+            {{-- SIDEBAR TERPADU --}}
+            @include('layouts.sidebar-admin')
 
             {{-- KONTEN UTAMA KANAN --}}
-            <div class="flex-1 w-full space-y-5">
+            <div class="flex-1 min-w-0 w-full space-y-5">
 
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
@@ -114,9 +85,9 @@
                     </div>
 
                     <div class="bg-white rounded-2xl p-4 shadow-xs border border-gray-100">
-                        <p class="text-[11px] font-bold text-gray-500 uppercase">VALIDASI SOP PIJAR</p>
+                        <p class="text-[11px] font-bold text-gray-500 uppercase">VALIDASI SOP SUAR</p>
                         <p class="text-xl font-extrabold text-[#0A4D29] my-2">Non-NIDN</p>
-                        <p class="text-[11px] text-gray-500">Memenuhi Aturan 6.1 Poin 2</p>
+                        <p class="text-[11px] text-gray-500">Memenuhi Syarat Praktisi Industri</p>
                     </div>
                 </div>
 
@@ -288,7 +259,7 @@
                         <option value="0">Nonaktif</option>
                     </select>
 
-                    <div class="flex justify-between items-center gap-2 pt-3 border-t">
+                    <div class="flex justify-between items-center gap-2 pt-3 border-t mt-3">
                         <button type="button" onclick="confirmDeletePraktisi()" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold cursor-pointer">
                             🗑️ Hapus Praktisi
                         </button>
@@ -308,33 +279,26 @@
     </div>
 
     <script>
-       function openEditPraktisi(btn) {
-                    const d = btn.dataset;
-                    document.getElementById('formEditPraktisi').action = '/suar/praktisi/' + d.id;
-                    document.getElementById('formDeletePraktisi').action = '/suar/praktisi/' + d.id;
-                    document.getElementById('edit_nama').value = d.nama;
-                    document.getElementById('edit_mitra').value = d.mitra;
-                    document.getElementById('edit_jabatan').value = d.jabatan;
-                    document.getElementById('edit_keahlian').value = d.keahlian;
-                    document.getElementById('edit_kontak').value = d.kontak || '';
-                    document.getElementById('edit_pengalaman').value = d.pengalaman || '';
-                    document.getElementById('edit_active').value = d.active;
-                    document.getElementById('modalEditPraktisi').classList.remove('hidden');
-                }
+        function openEditPraktisi(btn) {
+            const d = btn.dataset;
+            document.getElementById('formEditPraktisi').action = '/suar/praktisi/' + d.id;
+            document.getElementById('formDeletePraktisi').action = '/suar/praktisi/' + d.id;
+            document.getElementById('edit_nama').value = d.nama;
+            document.getElementById('edit_mitra').value = d.mitra;
+            document.getElementById('edit_jabatan').value = d.jabatan;
+            document.getElementById('edit_keahlian').value = d.keahlian;
+            document.getElementById('edit_kontak').value = d.kontak || '';
+            document.getElementById('edit_pengalaman').value = d.pengalaman || '';
+            document.getElementById('edit_active').value = d.active;
+            document.getElementById('modalEditPraktisi').classList.remove('hidden');
+        }
 
-                function confirmDeletePraktisi() {
-                    const nama = document.getElementById('edit_nama').value;
-                    if (confirm('Yakin ingin menghapus data praktisi "' + nama + '" secara permanen?')) {
-                        document.getElementById('formDeletePraktisi').submit();
-                    }
-                }
-
-                function confirmDeletePraktisi() {
-                    const nama = document.getElementById('edit_nama').value;
-                    if (confirm('Yakin ingin menghapus data praktisi "' + nama + '" secara permanen?')) {
-                        document.getElementById('formDeletePraktisi').submit();
-                    }
-                }
+        function confirmDeletePraktisi() {
+            const nama = document.getElementById('edit_nama').value;
+            if (confirm('Yakin ingin menghapus data praktisi "' + nama + '" secara permanen?')) {
+                document.getElementById('formDeletePraktisi').submit();
+            }
+        }
     </script>
 </body>
 </html>

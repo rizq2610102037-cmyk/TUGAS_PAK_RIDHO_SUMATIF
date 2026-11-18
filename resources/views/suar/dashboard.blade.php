@@ -12,7 +12,7 @@
     <header class="w-full flex flex-col md:flex-row shadow-sm sticky top-0 z-30">
         <div class="w-full md:w-3/4 bg-[#0A4D29] px-6 py-4 flex items-center justify-between gap-4">
             <div>
-                <p class="text-[11px] text-[#B7F4D1] font-semibold">Portal Admin SUAR &rsaquo; Penugasan Praktisi</p>
+                <p class="text-[11px] text-[#B7F4D1] font-semibold">Portal Admin Terpadu &rsaquo; Penugasan Praktisi SUAR</p>
                 <h1 class="text-white text-xl font-extrabold tracking-tight">Penugasan & Status Praktisi Mengajar</h1>
             </div>
 
@@ -44,48 +44,19 @@
             </div>
         @endif
 
-        <div class="flex flex-col lg:flex-row gap-6 items-start">
+        <div class="flex flex-col lg:flex-row gap-6 items-start w-full">
 
-            {{-- SIDEBAR MENU ADMIN SUAR --}}
-            <aside class="w-full lg:w-64 bg-[#0A4D29] rounded-2xl p-4 text-white flex flex-col justify-between lg:min-h-[760px] shrink-0 shadow-md">
-                <div class="space-y-4">
-                    <div class="px-3 py-2 bg-white/10 rounded-xl">
-                        <p class="text-[10px] uppercase tracking-wider text-[#B7F4D1] font-bold">UNIT AKADEMIK & INDUSTRI</p>
-                        <p class="text-sm font-extrabold text-white">Admin SUAR</p>
-                    </div>
-
-                    <nav class="space-y-2">
-                        <a href="{{ route('suar.dashboard') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[#B7F4D1] text-[#0A4D29] font-bold text-sm shadow-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                            Pengajuan & Penugasan
-                        </a>
-
-                        <a href="{{ route('suar.praktisi') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                            Data & Kompetensi Praktisi
-                        </a>
-                    </nav>
-                </div>
-
-                <div class="pt-8 mt-8 border-t border-white/15 space-y-2">
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-[#B7F4D1] hover:bg-red-500/20 hover:text-white transition text-sm cursor-pointer text-left">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                            Keluar
-                        </button>
-                    </form>
-                </div>
-            </aside>
+            {{-- SIDEBAR TERPADU --}}
+            @include('layouts.sidebar-admin')
 
             {{-- KONTEN UTAMA KANAN --}}
-            <div class="flex-1 w-full space-y-5">
+            <div class="flex-1 min-w-0 w-full space-y-5">
 
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#0A4D29]">● MODUL PENUGASAN PRAKTISI SUAR</span>
                         <h2 class="text-2xl font-extrabold text-gray-900">Pengajuan Disetujui & Penugasan Praktisi</h2>
-                        <p class="text-xs text-gray-600 mt-0.5">Daftar pengajuan mata kuliah yang telah disetujui Admin PIJAR untuk ditugaskan praktisi industri dan diperbarui status pelaksanaannya.</p>
+                        <p class="text-xs text-gray-600 mt-0.5">Daftar pengajuan mata kuliah yang telah disetujui untuk ditugaskan praktisi industri per periode semester (Pertemuan 1–12).</p>
                     </div>
                     <a href="{{ route('suar.praktisi') }}" class="px-4 py-2 rounded-xl bg-[#0A4D29] hover:bg-[#083b1f] text-white font-bold text-xs shadow-xs shrink-0">
                         + Kelola Data Praktisi ({{ $totalPraktisiAktif }} Aktif)
@@ -97,7 +68,7 @@
                     <div class="bg-white rounded-2xl p-4 shadow-xs border border-gray-100">
                         <p class="text-[11px] font-bold text-gray-500 uppercase">PENGAJUAN DISETUJUI</p>
                         <p class="text-3xl font-extrabold text-gray-900 my-1.5">{{ $totalDisetujui }}</p>
-                        <p class="text-[11px] text-[#0A4D29] font-semibold">Lolos verifikasi PIJAR</p>
+                        <p class="text-[11px] text-[#0A4D29] font-semibold">Lolos verifikasi pusat</p>
                     </div>
 
                     <div class="bg-white rounded-2xl p-4 shadow-xs border border-gray-100">
@@ -113,9 +84,9 @@
                     </div>
 
                     <div class="bg-white rounded-2xl p-4 shadow-xs border border-gray-100">
-                        <p class="text-[11px] font-bold text-gray-500 uppercase">PENUGASAN SELESAI</p>
+                        <p class="text-[11px] font-bold text-gray-500 uppercase">SELESAI MENGAJAR</p>
                         <p class="text-3xl font-extrabold text-gray-900 my-1.5">{{ $selesaiMengajar }}</p>
-                        <p class="text-[11px] text-[#0A4D29] font-semibold">Terlaksana di kelas</p>
+                        <p class="text-[11px] text-[#0A4D29] font-semibold">Siap pelaporan & honor</p>
                     </div>
                 </div>
 
@@ -137,8 +108,8 @@
                             <thead>
                                 <tr class="bg-gray-50 text-gray-600 text-[11px] font-extrabold uppercase tracking-wider border-b border-gray-200">
                                     <th class="py-3.5 px-4">MATA KULIAH & PRODI</th>
-                                    <th class="py-3.5 px-4">DOSEN PENGAMPU</th>
-                                    <th class="py-3.5 px-4">JADWAL & RUANG</th>
+                                    <th class="py-3.5 px-4">DOSEN PENGAMPU & RPS</th>
+                                    <th class="py-3.5 px-4">PERIODE SEMESTER</th>
                                     <th class="py-3.5 px-4">PRAKTISI DITUGASKAN</th>
                                     <th class="py-3.5 px-4 text-center">STATUS PENUGASAN</th>
                                     <th class="py-3.5 px-4 text-center">AKSI</th>
@@ -150,7 +121,7 @@
                                         <td class="py-4 px-4">
                                             <span class="bg-[#E8F5E9] text-[#0A4D29] font-bold px-2 py-0.5 rounded text-[10px]">{{ $item->course->kode_mk }}</span>
                                             <p class="font-bold text-gray-900 mt-1">{{ $item->course->nama_mk }}</p>
-                                            <p class="text-[11px] text-gray-500">{{ $item->course->prodi }} • Pertemuan ke-{{ $item->pertemuan_ke ?? 1 }}</p>
+                                            <p class="text-[11px] text-gray-500">{{ $item->course->prodi }} • {{ $item->course->sks }} SKS</p>
                                         </td>
                                         <td class="py-4 px-4">
                                             <p class="font-bold text-gray-800">{{ $item->dosen_pengajar }}</p>
@@ -161,8 +132,9 @@
                                             @endif
                                         </td>
                                         <td class="py-4 px-4">
-                                            <p class="font-semibold text-gray-800">{{ $item->hari_sesi }}</p>
-                                            <p class="text-[11px] text-gray-500">{{ $item->waktu_sesi }} • Ruang {{ $item->room->kode_ruang }}</p>
+                                            <p class="font-bold text-[#0A4D29]">TA {{ $item->tahun_ajaran ?? '2026-2027' }}</p>
+                                            <p class="text-[11px] text-gray-600">{{ ($item->semester_jenis ?? 'Ganjil') . ' (Sem. ' . ($item->semester_angka ?? 1) . ')' }}</p>
+                                            <p class="text-[10px] text-gray-400">Progres: {{ $item->jumlah_pertemuan_terlaksana ?? 0 }}/12 Pertemuan</p>
                                         </td>
                                         <td class="py-4 px-4">
                                             @if($item->praktisi_nama)
@@ -174,11 +146,11 @@
                                         </td>
                                         <td class="py-4 px-4 text-center">
                                             @if($item->status_eksternal === 'completed')
-                                                <span class="inline-block bg-[#D5F5E3] text-[#0A4D29] font-bold px-3 py-1 rounded-full text-[11px]">✓ Selesai</span>
+                                                <span class="inline-block bg-[#D5F5E3] text-[#0A4D29] font-bold px-3 py-1 rounded-full text-[11px]">✓ Selesai Mengajar</span>
                                             @elseif($item->status_eksternal === 'ongoing')
                                                 <span class="inline-block bg-blue-100 text-blue-700 font-bold px-3 py-1 rounded-full text-[11px]">● Berlangsung</span>
                                             @elseif($item->status_eksternal === 'ready_to_teach')
-                                                <span class="inline-block bg-[#E8F5E9] text-[#0A4D29] font-bold px-3 py-1 rounded-full text-[11px]">✓ Siap Mengajar</span>
+                                                <span class="inline-block bg-[#E8F5E9] text-[#0A4D29] font-bold px-3 py-1 rounded-full text-[11px]">✓ Ready to Teach</span>
                                             @else
                                                 <span class="inline-block bg-[#FFF0E0] text-[#F57C00] font-bold px-3 py-1 rounded-full text-[11px]">⏳ Menunggu Penugasan</span>
                                             @endif
@@ -203,7 +175,7 @@
                                 @empty
                                     <tr>
                                         <td colspan="6" class="py-10 text-center text-gray-500">
-                                            Belum ada pengajuan yang disetujui oleh Admin PIJAR.
+                                            Belum ada pengajuan yang disetujui oleh Admin Pusat.
                                         </td>
                                     </tr>
                                 @endforelse

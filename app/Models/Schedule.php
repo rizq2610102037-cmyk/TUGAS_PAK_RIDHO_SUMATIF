@@ -14,9 +14,11 @@ class Schedule extends Model
     'nomor_iks', 'status_presensi_pijar', 'tautan_evaluasi',
     'tanggal_pengajuan', 'status', 'status_eksternal',
     'status_honorarium', 'status_bap', 'pic_akademik', 'pic_kontak',
-    'tautan_zoom', 'is_external'
+    'tautan_zoom', 'is_external',
 ];
 
+    protected $guarded = ['id'];
+    
     protected $casts = [
         'tanggal_pengajuan' => 'datetime',
         'is_external' => 'boolean',

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Jadwal & Approval - Admin PIJAR</title>
+    <title>Manajemen Jadwal & Approval - Admin PIJAR & SUAR</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-[#FAFCEB] font-sans text-gray-800 min-h-screen flex flex-col">
@@ -12,7 +12,7 @@
     <header class="w-full flex flex-col md:flex-row shadow-sm sticky top-0 z-30">
         <div class="w-full md:w-3/4 bg-[#0A4D29] px-6 py-4 flex items-center justify-between gap-4">
             <div>
-                <p class="text-[11px] text-[#B7F4D1] font-semibold">Portal Admin &rsaquo; Akademik</p>
+                <p class="text-[11px] text-[#B7F4D1] font-semibold">Portal Admin Terpadu &rsaquo; Akademik & Praktisi</p>
                 <h1 class="text-white text-xl font-extrabold tracking-tight">Manajemen Jadwal & Approval</h1>
             </div>
 
@@ -50,90 +50,69 @@
             </div>
         @endif
 
-        <div class="flex flex-col lg:flex-row gap-6 items-start">
+        <div class="flex flex-col lg:flex-row gap-6 items-start w-full">
 
-            {{-- SIDEBAR MENU --}}
-            <aside class="w-full lg:w-64 bg-[#0A4D29] rounded-2xl p-4 text-white flex flex-col justify-between lg:min-h-[670px] shrink-0 shadow-md">
-                <nav class="space-y-2">
-                    <a href="{{ route('pijar.dashboard') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm8 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM3 12a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1v-4zm8 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
-                        Dashboard
-                    </a>
-
-                    {{-- Menu Aktif: Manajemen Jadwal --}}
-                    <a href="{{ route('pijar.manajemen-jadwal') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[#B7F4D1] text-[#0A4D29] font-bold text-sm shadow-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        Manajemen Jadwal
-                    </a>
-
-                    <a href="{{ route('pijar.jadwal-eksternal') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
-                        Jadwal Pihak Eksternal
-                    </a>
-
-                    <a href="{{ route('pijar.manajemen-akun') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        Manajemen Akun
-                    </a>
-
-                    <a href="{{ route('pijar.rekap-pengajaran') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        Rekap Pengajaran
-                    </a>
-                </nav>
-
-                <div class="pt-8 mt-8 border-t border-white/15 space-y-2">
-                    <a href="#" class="flex items-center gap-3 px-4 py-2 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        Pengaturan
-                    </a>
-
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-[#B7F4D1] hover:bg-red-500/20 hover:text-white transition text-sm cursor-pointer text-left">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                            Keluar
-                        </button>
-                    </form>
-                </div>
-            </aside>
+            {{-- SIDEBAR TERPADU --}}
+            @include('layouts.sidebar-admin')
 
             {{-- KONTEN UTAMA MANAJEMEN JADWAL --}}
-            <div class="flex-1 w-full space-y-5">
+            <div class="flex-1 min-w-0 w-full space-y-5">
 
-                {{-- Header & Ringkasan Filter Cepat --}}
+                {{-- Header, Filter Semester/Tahun Ajaran, & Tombol Aksi --}}
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-gray-100">
                         <div>
                             <span class="inline-block bg-[#D5F5E3] text-[#0A4D29] text-[11px] font-bold px-3 py-0.5 rounded-full mb-1">
-                                Periode Aktif: Semester Ganjil 2026/2027
+                                Periode Akademik: {{ $tahunAjaran ?: 'Semua Tahun Ajaran' }} {{ $semester ? '• Semester ' . $semester : '' }}
                             </span>
-                            <h2 class="text-2xl font-extrabold text-gray-900">Verifikasi & Validasi Jadwal Perkuliahan</h2>
-                            <p class="text-xs text-gray-500 mt-0.5">Kelola pengajuan jadwal dari seluruh Program Studi, periksa ketersediaan ruang, dan berikan keputusan persetujuan.</p>
+                            <h2 class="text-2xl font-extrabold text-gray-900">Verifikasi & Validasi Jadwal Semester</h2>
+                            <p class="text-xs text-gray-500 mt-0.5">Kelola pengajuan PIJAR & SUAR berdasarkan Semester & Tahun Ajaran, kustomisasi data master, serta aktifkan akun dosen otomatis saat ACC.</p>
                         </div>
 
-                        <div class="flex items-center gap-2 shrink-0">
+                        <div class="flex flex-wrap items-center gap-2 shrink-0">
+                            <button type="button" onclick="document.getElementById('modalMaster').classList.remove('hidden')" class="px-3.5 py-2 rounded-xl border border-[#0A4D29] text-[#0A4D29] hover:bg-[#E8F5E9] text-xs font-bold cursor-pointer">
+                                ⚙️ Master Ruang & MK
+                            </button>
                             <a href="{{ route('pijar.manajemen-jadwal') }}" class="px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50">
                                 ↻ Reset Filter
                             </a>
                             <button type="button" onclick="document.getElementById('modalTambah').classList.remove('hidden')" class="px-4 py-2 rounded-xl bg-[#0A4D29] hover:bg-[#083b1f] text-white text-xs font-bold shadow-sm cursor-pointer">
-                                + Tambah Jadwal Cepat
+                                + Tambah Jadwal Semester
                             </button>
                         </div>
                     </div>
 
+                    {{-- Filter Tahun Ajaran & Semester (Revisi Pak Ridho) --}}
+                    <form action="{{ route('pijar.manajemen-jadwal') }}" method="GET" class="flex flex-wrap items-center gap-2.5 pt-4 pb-3 border-b border-gray-100 text-xs">
+                        <input type="hidden" name="status" value="{{ $status }}">
+                        <input type="hidden" name="search" value="{{ $search }}">
+
+                        <select name="tahun_ajaran" onchange="this.form.submit()" class="border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 font-bold text-gray-700">
+                            <option value="">Semua Tahun Ajaran</option>
+                            @foreach(['2026-2027', '2027-2028', '2028-2029', '2029-2030', '2030-2031'] as $th)
+                                <option value="{{ $th }}" {{ ($tahunAjaran ?? '') === $th ? 'selected' : '' }}>Tahun Ajaran {{ $th }}</option>
+                            @endforeach
+                        </select>
+
+                        <select name="semester_jenis" onchange="this.form.submit()" class="border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 font-bold text-gray-700">
+                            <option value="">Semua Semester (Ganjil/Genap)</option>
+                            <option value="Ganjil" {{ ($semester ?? '') === 'Ganjil' ? 'selected' : '' }}>Semester Ganjil</option>
+                            <option value="Genap" {{ ($semester ?? '') === 'Genap' ? 'selected' : '' }}>Semester Genap</option>
+                        </select>
+                    </form>
+
                     {{-- Tab Filter Status --}}
                     <div class="flex flex-wrap items-center gap-2 pt-4 text-xs">
-                        <a href="{{ route('pijar.manajemen-jadwal') }}" class="px-3.5 py-1.5 rounded-full font-bold transition {{ !$status ? 'bg-[#0A4D29] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                        <a href="{{ route('pijar.manajemen-jadwal', ['tahun_ajaran' => $tahunAjaran, 'semester_jenis' => $semester]) }}" class="px-3.5 py-1.5 rounded-full font-bold transition {{ !$status ? 'bg-[#0A4D29] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Semua Jadwal ({{ $totalJadwal }})
                         </a>
-                        <a href="{{ route('pijar.manajemen-jadwal', ['status' => 'pending_approval']) }}" class="px-3.5 py-1.5 rounded-full font-bold transition {{ $status === 'pending_approval' ? 'bg-[#F57C00] text-white' : 'bg-[#FFF0E0] text-[#F57C00] hover:bg-[#ffe1bf]' }}">
+                        <a href="{{ route('pijar.manajemen-jadwal', ['status' => 'pending_approval', 'tahun_ajaran' => $tahunAjaran, 'semester_jenis' => $semester]) }}" class="px-3.5 py-1.5 rounded-full font-bold transition {{ $status === 'pending_approval' ? 'bg-[#F57C00] text-white' : 'bg-[#FFF0E0] text-[#F57C00] hover:bg-[#ffe1bf]' }}">
                             Menunggu Verifikasi ({{ $menungguApprove }})
                         </a>
-                        <a href="{{ route('pijar.manajemen-jadwal', ['status' => 'approved']) }}" class="px-3.5 py-1.5 rounded-full font-bold transition {{ $status === 'approved' ? 'bg-[#0A4D29] text-white' : 'bg-[#D5F5E3] text-[#0A4D29] hover:bg-[#bcefd2]' }}">
-                            Disetujui ({{ $jadwalDisetujui }})
+                        <a href="{{ route('pijar.manajemen-jadwal', ['status' => 'approved', 'tahun_ajaran' => $tahunAjaran, 'semester_jenis' => $semester]) }}" class="px-3.5 py-1.5 rounded-full font-bold transition {{ $status === 'approved' ? 'bg-[#0A4D29] text-white' : 'bg-[#D5F5E3] text-[#0A4D29] hover:bg-[#bcefd2]' }}">
+                            Disetujui / ACC ({{ $jadwalDisetujui }})
                         </a>
-                        <a href="{{ route('pijar.manajemen-jadwal', ['status' => 'revision_requested']) }}" class="px-3.5 py-1.5 rounded-full font-bold transition {{ $status === 'revision_requested' ? 'bg-[#FF0000] text-white' : 'bg-[#FADBD8] text-[#C0392B] hover:bg-[#f5c6c2]' }}">
+                        <a href="{{ route('pijar.manajemen-jadwal', ['status' => 'revision_requested', 'tahun_ajaran' => $tahunAjaran, 'semester_jenis' => $semester]) }}" class="px-3.5 py-1.5 rounded-full font-bold transition {{ $status === 'revision_requested' ? 'bg-[#FF0000] text-white' : 'bg-[#FADBD8] text-[#C0392B] hover:bg-[#f5c6c2]' }}">
                             Revisi / Ditolak ({{ $jadwalRevisi }})
                         </a>
                     </div>
@@ -147,9 +126,9 @@
                                 <tr class="bg-[#0A4D29] text-white text-[11px] font-bold uppercase tracking-wider">
                                     <th class="py-3.5 px-4">ID & Mata Kuliah</th>
                                     <th class="py-3.5 px-4">Program Studi</th>
-                                    <th class="py-3.5 px-4">Pengampu & Pengaju</th>
-                                    <th class="py-3.5 px-4">Sesi & Ruangan</th>
-                                    <th class="py-3.5 px-4 text-center">Status</th>
+                                    <th class="py-3.5 px-4">Pengampu & Akun Kampus</th>
+                                    <th class="py-3.5 px-4">Semester & Ruangan</th>
+                                    <th class="py-3.5 px-4 text-center">Status Verifikasi</th>
                                     <th class="py-3.5 px-4 text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -157,20 +136,30 @@
                                 @forelse ($schedules as $item)
                                     <tr class="hover:bg-gray-50 transition">
                                         <td class="py-4 px-4">
-                                            <span class="text-[10px] font-mono font-bold text-gray-400">REQ-{{ $item->tanggal_pengajuan->format('Ymd') }}-{{ str_pad($item->id, 3, '0', STR_PAD_LEFT) }}</span>
+                                            <div class="flex items-center gap-1.5 mb-0.5">
+                                                <span class="text-[10px] font-mono font-bold text-gray-400">REQ-{{ $item->tanggal_pengajuan->format('Ymd') }}-{{ str_pad($item->id, 3, '0', STR_PAD_LEFT) }}</span>
+                                                @if($item->is_external || $item->jenis_program === 'SUAR')
+                                                    <span class="bg-[#FFF0E0] text-[#F57C00] text-[9px] font-extrabold px-1.5 py-0.5 rounded">SUAR</span>
+                                                @else
+                                                    <span class="bg-[#E8F5E9] text-[#0A4D29] text-[9px] font-extrabold px-1.5 py-0.5 rounded">PIJAR</span>
+                                                @endif
+                                            </div>
                                             <p class="font-bold text-gray-900 text-sm">{{ $item->course->kode_mk }} - {{ $item->course->nama_mk }}</p>
-                                            <p class="text-gray-500 mt-0.5">{{ $item->course->sks }} SKS · {{ $item->kelas }}</p>
+                                            <p class="text-gray-500 mt-0.5">{{ $item->course->sks }} SKS · {{ $item->kelas ?? 'Kelas A' }}</p>
                                         </td>
                                         <td class="py-4 px-4 font-semibold text-gray-800">
                                             {{ $item->course->prodi }}
                                         </td>
                                         <td class="py-4 px-4">
-                                            <p class="font-bold text-gray-900 whitespace-pre-line">{{ $item->dosen_pengajar }}</p>
+                                            <p class="font-bold text-gray-900 whitespace-pre-line">{{ $item->praktisi_nama ?: $item->dosen_pengajar }}</p>
                                             <p class="text-[11px] text-gray-500 mt-0.5">Pengaju: {{ $item->peran_pengaju }}</p>
+                                            @if($item->dosen_email_kampus)
+                                                <p class="text-[10px] text-[#0A4D29] font-semibold mt-0.5">✉️ {{ $item->dosen_email_kampus }}</p>
+                                            @endif
                                         </td>
                                         <td class="py-4 px-4">
-                                            <p class="font-bold text-gray-800">{{ $item->hari_sesi }}</p>
-                                            <p class="text-gray-500">{{ $item->waktu_sesi }}</p>
+                                            <p class="font-bold text-gray-800">TA {{ $item->tahun_ajaran ?? '2026-2027' }}</p>
+                                            <p class="text-gray-600">Semester {{ $item->semester_jenis ?? 'Ganjil' }} (Sem. {{ $item->semester_angka ?? 1 }})</p>
                                             <span class="inline-block mt-1 bg-[#E8F5E9] text-[#0A4D29] font-bold px-2 py-0.5 rounded text-[11px]">
                                                 {{ $item->room->kode_ruang }} (Kapasitas: {{ $item->room->kapasitas }})
                                             </span>
@@ -182,16 +171,19 @@
                                                 </span>
                                             @elseif ($item->status === 'approved')
                                                 <span class="inline-block bg-[#D5F5E3] text-[#0A4D29] font-bold px-3.5 py-1 rounded-full text-[11px]">
-                                                    ✓ Disetujui
+                                                    ✓ Disetujui (ACC)
                                                 </span>
                                             @elseif ($item->status === 'revision_requested')
                                                 <span class="inline-block bg-[#FADBD8] text-[#C0392B] font-bold px-3 py-1 rounded-full text-[11px]">
                                                     ! Minta Revisi
                                                 </span>
                                             @else
-                                                <span class="inline-block bg-gray-200 text-gray-700 font-bold px-3 py-1 rounded-full text-[11px]">
+                                                <span class="inline-block bg-red-100 text-red-700 font-bold px-3 py-1 rounded-full text-[11px]">
                                                     ✕ Ditolak
                                                 </span>
+                                                @if($item->alasan_penolakan)
+                                                    <p class="text-[10px] text-red-600 mt-1 max-w-[160px] mx-auto">{{ $item->alasan_penolakan }}</p>
+                                                @endif
                                             @endif
                                         </td>
                                         <td class="py-4 px-4 text-center">
@@ -204,61 +196,33 @@
                                                 data-namamk="{{ $item->course->nama_mk }}"
                                                 data-prodi="{{ $item->course->prodi }}"
                                                 data-sks="{{ $item->course->sks }}"
-                                                data-kelas="{{ $item->kelas }}"
-                                                data-dosen="{{ $item->dosen_pengajar }}"
+                                                data-kelas="{{ $item->kelas ?? 'Kelas A' }}"
+                                                data-dosen="{{ $item->praktisi_nama ?: $item->dosen_pengajar }}"
+                                                data-email="{{ $item->dosen_email_kampus ?? '' }}"
                                                 data-pengaju="{{ $item->peran_pengaju }}"
                                                 data-waktuajuan="{{ $item->tanggal_pengajuan->translatedFormat('d F Y, H:i') }} WIB"
-                                                data-harisesi="{{ $item->hari_sesi }}"
-                                                data-waktusesi="{{ $item->waktu_sesi }}"
+                                                data-tahunajaran="{{ $item->tahun_ajaran ?? '2026-2027' }}"
+                                                data-semesterjenis="{{ $item->semester_jenis ?? 'Ganjil' }}"
+                                                data-semesterangka="{{ $item->semester_angka ?? 1 }}"
                                                 data-roomid="{{ $item->room_id }}"
                                                 data-roomkode="{{ $item->room->kode_ruang }}"
                                                 data-roomkapasitas="{{ $item->room->kapasitas }}"
-                                                data-catatan="{{ $item->catatan_pengaju ?? 'Pengajuan jadwal perkuliahan reguler sesuai kurikulum program studi.' }}"
+                                                data-catatan="{{ $item->catatan_pengaju ?? 'Pengajuan jadwal perkuliahan sesuai kurikulum program studi.' }}"
+                                                data-alasan="{{ $item->alasan_penolakan ?? '' }}"
                                                 data-status="{{ $item->status }}"
-                                                data-praktisi="{{ $item->praktisi_nama ?? ($item->is_external ? $item->dosen_pengajar : 'Perkuliahan Reguler (Non-Praktisi)') }}"
                                                 data-pertemuanke="{{ $item->pertemuan_ke ?? 1 }}"
                                                 data-kuotamk="{{ $kuotaMk[$item->course_id] ?? 0 }}"
                                                 data-kuotaprodi="{{ $kuotaProdi[$item->course->prodi] ?? 0 }}"
                                                 data-dokumen="{{ $item->dokumen_bahan_ajar ? asset('storage/' . $item->dokumen_bahan_ajar) : '' }}"
-                                                data-iks="{{ $item->nomor_iks ?? '' }}"
-                                                data-presensi="{{ $item->status_presensi_pijar ?? 'Formulir Diberikan' }}"
                                                 class="bg-[#0A4D29] hover:bg-[#F57C00] text-white font-bold px-4 py-1.5 rounded-lg text-[11px] transition cursor-pointer shadow-xs">
                                                 Periksa & Putuskan
-
-                                                {{-- Blok Kepatuhan SOP PRU/SPMI/SD-BM10 --}}
-                                                    <div class="bg-[#FAFCEB] border border-[#0A4D29]/20 rounded-xl p-4 mt-4 text-xs space-y-2.5">
-                                                        <div class="flex items-center justify-between">
-                                                            <p class="text-[10px] font-extrabold uppercase tracking-wider text-[#0A4D29]">KONTROL KUOTA & DOKUMEN SOP PIJAR (SD-BM-10)</p>
-                                                            <span class="bg-[#D5F5E3] text-[#0A4D29] font-bold px-2 py-0.5 rounded text-[10px]">Pertemuan ke-<span id="modal_pertemuan_ke">1</span></span>
-                                                        </div>
-                                                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                                                            <div class="bg-white border border-gray-200/80 rounded-lg p-2.5">
-                                                                <p class="text-[10px] text-gray-500">Kuota MK (Maks 7x)</p>
-                                                                <p class="font-extrabold text-gray-900 mt-0.5"><span id="modal_kuota_mk">1</span> / 7 Pertemuan</p>
-                                                            </div>
-                                                            <div class="bg-white border border-gray-200/80 rounded-lg p-2.5">
-                                                                <p class="text-[10px] text-gray-500">Kuota Prodi/Tahun (Maks 28x)</p>
-                                                                <p class="font-extrabold text-[#0A4D29] mt-0.5"><span id="modal_kuota_prodi">1</span> / 28 Pertemuan</p>
-
-                                                                
-                                                            </div>
-
-                                                            {{-- INI BAGIAN LANGKAH 2 --}}
-                                                            <div class="bg-white border border-gray-200/80 rounded-lg p-2.5">
-                                                                <p class="text-[10px] text-gray-500">Berkas RPS / RPS Mini</p>
-                                                                <a id="modal_link_dokumen" href="#" target="_blank" class="font-bold text-[#F57C00] hover:underline mt-0.5 inline-block">
-                                                                    📄 Unduh / Lihat Berkas
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
                                             </button>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
                                         <td colspan="6" class="py-10 text-center text-gray-500">
-                                            Belum ada data jadwal sesuai filter yang dipilih.
+                                            Belum ada data jadwal sesuai filter semester/tahun ajaran yang dipilih.
                                         </td>
                                     </tr>
                                 @endforelse
@@ -266,7 +230,6 @@
                         </table>
                     </div>
 
-                    {{-- Pagination --}}
                     <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
                         {{ $schedules->links() }}
                     </div>
@@ -276,11 +239,10 @@
         </div>
     </div>
 
-    {{-- MODAL PERSETUJUAN JADWAL (PERSIS STRUKTUR FOTO) --}}
+    {{-- MODAL PERSETUJUAN JADWAL --}}
     <div id="modalApproval" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-2xl max-w-3xl w-full p-6 md:p-7 shadow-2xl my-8 relative">
 
-            {{-- Header Modal --}}
             <div class="flex items-start justify-between gap-4">
                 <div class="flex items-start gap-3.5">
                     <div class="w-11 h-11 rounded-xl bg-[#0A4D29] text-white flex items-center justify-center shrink-0 mt-0.5">
@@ -298,27 +260,15 @@
                         <h3 id="modal_judul_mk" class="text-xl md:text-2xl font-extrabold text-gray-900 leading-snug">
                             Persetujuan Jadwal: Kode - Nama Mata Kuliah
                         </h3>
-                        <p class="text-xs text-gray-500 mt-0.5">Lakukan verifikasi integritas data mata kuliah, beban dosen, dan ketersediaan ruangan.</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Verifikasi mata kuliah, beban SKS, semester aktif, dan aktivasi akun email kampus pengajar.</p>
                     </div>
                 </div>
 
                 <button type="button" onclick="closeApprovalModal()" class="text-gray-400 hover:text-gray-700 p-1 text-lg font-bold cursor-pointer">✕</button>
             </div>
 
-            {{-- Alert Box Peringatan Validasi Ruangan --}}
-            <div class="mt-4 bg-[#FFF6E5] border border-[#F5A642]/50 rounded-xl p-3.5 flex items-start gap-3">
-                <span class="text-[#F57C00] text-lg leading-none mt-0.5">⚠</span>
-                <div class="text-xs text-[#8A4B08] leading-relaxed">
-                    <p class="font-bold text-[#6E3B04]">Peringatan Validasi Ruangan & Alokasi Perangkat</p>
-                    <p class="mt-0.5">
-                        Pastikan ketersediaan ruangan <strong id="modal_alert_ruang">Smart Class</strong> dan perangkat pendukung sebelum memberikan persetujuan final.
-                    </p>
-                </div>
-            </div>
-
             {{-- Grid 2 Kolom: Spesifikasi Akademik & Pihak Pengampu --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                {{-- Kolom Kiri --}}
                 <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-2.5 text-xs">
                     <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">SPESIFIKASI AKADEMIK</p>
                     <div class="flex justify-between gap-2">
@@ -330,25 +280,16 @@
                         <span id="modal_sks" class="font-bold text-gray-900">3 SKS</span>
                     </div>
                     <div class="flex justify-between gap-2">
-                        <span class="text-gray-500">Semester / Kelas</span>
+                        <span class="text-gray-500">Kelas</span>
                         <span id="modal_kelas" class="font-bold text-gray-900">Kelas A</span>
-                    </div>
-                    <div class="flex justify-between items-center gap-2">
-                        <span class="text-gray-500">Jenis Kegiatan</span>
-                        <span class="bg-[#D5F5E3] text-[#0A4D29] font-bold px-2.5 py-0.5 rounded-md text-[11px]">Perkuliahan Reguler Tatap Muka</span>
                     </div>
                 </div>
 
-                {{-- Kolom Kanan --}}
                 <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-2.5 text-xs">
                     <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">PIHAK PENGAMPU & PENGUSUL</p>
                     <div class="flex justify-between gap-2">
-                        <span class="text-gray-500">Dosen Utama</span>
+                        <span class="text-gray-500">Dosen / Praktisi</span>
                         <span id="modal_dosen" class="font-bold text-gray-900 text-right whitespace-pre-line">Nama Dosen</span>
-                    </div>
-                    <div class="flex justify-between gap-2">
-                        <span class="text-gray-500">Status Ikatan</span>
-                        <span class="font-bold text-[#0A4D29]">Dosen Tetap Homebase</span>
                     </div>
                     <div class="flex justify-between gap-2">
                         <span class="text-gray-500">Pengaju Sesi</span>
@@ -361,19 +302,19 @@
                 </div>
             </div>
 
-            {{-- Jadwal Sesi & Alokasi Ruang --}}
+            {{-- Periode Semester & Alokasi Ruang (Revisi Pak Ridho: Semester & Tahun Ajaran) --}}
             <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 mt-4">
-                <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2.5">JADWAL SESI & ALOKASI RUANG</p>
+                <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2.5">PERIODE SEMESTER & ALOKASI RUANG</p>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                     <div class="bg-white border border-gray-200/80 rounded-lg p-3">
-                        <p class="text-[11px] text-gray-500">Hari & Tanggal</p>
-                        <p id="modal_hari_sesi" class="font-extrabold text-gray-900 text-sm mt-0.5">Rabu, 26 Maret 2026</p>
-                        <p class="text-[10px] text-gray-400 mt-0.5">Semester Ganjil 2026/2027</p>
+                        <p class="text-[11px] text-gray-500">Tahun Ajaran</p>
+                        <p id="modal_tahun_ajaran" class="font-extrabold text-gray-900 text-sm mt-0.5">2026-2027</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Kurikulum Aktif</p>
                     </div>
                     <div class="bg-white border border-gray-200/80 rounded-lg p-3">
-                        <p class="text-[11px] text-gray-500">Waktu / Durasi</p>
-                        <p id="modal_waktu_sesi" class="font-extrabold text-gray-900 text-sm mt-0.5">08:00 - 10:30 WIB</p>
-                        <p class="text-[10px] text-gray-400 mt-0.5">Sesuai Bobot SKS</p>
+                        <p class="text-[11px] text-gray-500">Semester</p>
+                        <p id="modal_semester_info" class="font-extrabold text-gray-900 text-sm mt-0.5">Ganjil (Semester 1)</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Sesuai Plotting Prodi</p>
                     </div>
                     <div class="bg-white border border-gray-200/80 rounded-lg p-3">
                         <p class="text-[11px] text-gray-500">Ruang & Kapasitas</p>
@@ -383,41 +324,61 @@
                 </div>
             </div>
 
-            {{-- Catatan dari Pengaju --}}
-            <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 mt-4">
-                <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2">CATATAN DARI PENGAJU (KAPRODI):</p>
-                <div class="bg-white border border-gray-200/80 rounded-lg p-3 text-xs italic text-gray-700">
-                    “<span id="modal_catatan_pengaju">Pengajuan jadwal perkuliahan reguler.</span>”
+            {{-- Blok Kepatuhan SOP PRU/SPMI/SD-BM10 --}}
+            <div class="bg-[#FAFCEB] border border-[#0A4D29]/20 rounded-xl p-4 mt-4 text-xs space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <p class="text-[10px] font-extrabold uppercase tracking-wider text-[#0A4D29]">KONTROL KUOTA & DOKUMEN SOP (SD-BM-10)</p>
+                    <span class="bg-[#D5F5E3] text-[#0A4D29] font-bold px-2 py-0.5 rounded text-[10px]">Pertemuan ke-<span id="modal_pertemuan_ke">1</span></span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <div class="bg-white border border-gray-200/80 rounded-lg p-2.5">
+                        <p class="text-[10px] text-gray-500">Kuota MK (Maks 7x)</p>
+                        <p class="font-extrabold text-gray-900 mt-0.5"><span id="modal_kuota_mk">0</span> / 7 Pertemuan</p>
+                    </div>
+                    <div class="bg-white border border-gray-200/80 rounded-lg p-2.5">
+                        <p class="text-[10px] text-gray-500">Kuota Prodi/Tahun (Maks 28x)</p>
+                        <p class="font-extrabold text-[#0A4D29] mt-0.5"><span id="modal_kuota_prodi">0</span> / 28 Pertemuan</p>
+                    </div>
+                    <div class="bg-white border border-gray-200/80 rounded-lg p-2.5">
+                        <p class="text-[10px] text-gray-500">Berkas RPS / Silabus</p>
+                        <a id="modal_link_dokumen" href="#" target="_blank" class="font-bold text-[#F57C00] hover:underline mt-0.5 inline-block">
+                            📄 Unduh / Lihat Berkas
+                        </a>
+                    </div>
                 </div>
             </div>
 
             {{-- Form Keputusan Administrator --}}
-            <form id="formDecision" method="POST" class="mt-5 pt-4 border-t border-gray-200">
+            <form id="formDecision" method="POST" class="mt-5 pt-4 border-t border-gray-200 space-y-3 text-xs">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="dosen_pengajar" id="input_dosen">
                 <input type="hidden" name="status" id="input_status" value="approved">
 
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
-                    <h4 class="text-sm font-extrabold text-gray-900">Formulir Keputusan Administrator</h4>
-                    <div class="flex items-center gap-2 text-xs">
-                        <label class="font-bold text-gray-600">Penyesuaian Ruang:</label>
-                        <select name="room_id" id="input_room_id" class="border border-gray-300 rounded-lg px-2.5 py-1 text-xs font-semibold">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-gray-600 mb-1">Penyesuaian Ruang:</label>
+                        <select name="room_id" id="input_room_id" class="w-full border border-gray-300 rounded-xl px-3 py-2 font-semibold">
                             @foreach($rooms as $room)
                                 <option value="{{ $room->id }}">{{ $room->kode_ruang }} ({{ $room->kapasitas }} Kursi)</option>
                             @endforeach
                         </select>
                     </div>
+                    <div>
+                        <label class="block font-bold text-gray-600 mb-1">Email Kampus Pengajar (Otomatis aktifkan akun saat ACC):</label>
+                        <input type="email" name="dosen_email_kampus" id="input_email_kampus" placeholder="Kosongkan untuk generate otomatis (@pradita.ac.id)" class="w-full border border-gray-300 rounded-xl px-3 py-2">
+                    </div>
                 </div>
 
-                <div class="mb-4">
-                    <input type="text" name="catatan_admin" placeholder="Tambahkan catatan keputusan atau alasan revisi (opsional)..." class="w-full border border-gray-300 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#0A4D29]">
+                <div>
+                    <label class="block font-bold text-gray-600 mb-1">Catatan Admin / Alasan Penolakan (Jika Ditolak):</label>
+                    <input type="text" name="alasan_penolakan" id="input_alasan_penolakan" placeholder="Isi alasan penolakan apabila memilih Tolak Jadwal (ditampilkan ke Kaprodi)..." class="w-full border border-gray-300 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-[#0A4D29]">
                 </div>
 
-                <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
                     <div class="flex flex-wrap items-center gap-2">
                         <button type="submit" onclick="document.getElementById('input_status').value='approved'" class="px-4 py-2 rounded-xl bg-[#D5F5E3] hover:bg-[#0A4D29] text-[#0A4D29] hover:text-white font-extrabold text-xs transition cursor-pointer">
-                            ✓ Setujui (Approve)
+                            ✓ ACC & Aktifkan Akun Pengajar
                         </button>
                         <button type="submit" onclick="document.getElementById('input_status').value='revision_requested'" class="px-4 py-2 rounded-xl bg-[#FFF0E0] hover:bg-[#F57C00] text-[#F57C00] hover:text-white font-extrabold text-xs transition cursor-pointer">
                             ✎ Minta Revisi
@@ -428,66 +389,15 @@
                     </div>
 
                     <button type="button" onclick="closeApprovalModal()" class="px-4 py-2 rounded-xl border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold text-xs cursor-pointer">
-                        Tutup Formulir
+                        Tutup
                     </button>
                 </div>
-                <p class="text-[10px] text-gray-400 mt-2">Persetujuan akan disimpan secara permanen pada log riwayat akademik.</p>
             </form>
 
         </div>
     </div>
 
-    {{-- MODAL TAMBAH JADWAL CEPAT --}}
-    <div id="modalTambah" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-lg font-extrabold text-[#0A4D29]">Tambah Jadwal Cepat</h3>
-                <button type="button" onclick="document.getElementById('modalTambah').classList.add('hidden')" class="text-gray-500 hover:text-gray-800 font-bold cursor-pointer">✕</button>
-            </div>
-            <form action="{{ route('pijar.schedules.store') }}" method="POST" class="space-y-3 text-xs">
-                @csrf
-                <div>
-                    <label class="block font-bold mb-1">Mata Kuliah</label>
-                    <select name="course_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                        @foreach($courses as $course)
-                            <option value="{{ $course->id }}">{{ $course->kode_mk }} - {{ $course->nama_mk }} ({{ $course->prodi }})</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block font-bold mb-1">Ruang Kuliah</label>
-                    <select name="room_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                        @foreach($rooms as $room)
-                            <option value="{{ $room->id }}">{{ $room->kode_ruang }} - {{ $room->nama_ruang }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block font-bold mb-1">Dosen Pengajar</label>
-                    <input type="text" name="dosen_pengajar" required placeholder="Nama lengkap & gelar dosen" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-bold mb-1">Peran Pengaju</label>
-                        <input type="text" name="peran_pengaju" value="Admin PIJAR" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                    </div>
-                    <div>
-                        <label class="block font-bold mb-1">Status Awal</label>
-                        <select name="status" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                            <option value="approved">Approved</option>
-                            <option value="pending_approval">Pending Approval</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="flex justify-end gap-2 pt-3 border-t">
-                    <button type="button" onclick="document.getElementById('modalTambah').classList.add('hidden')" class="px-4 py-2 rounded-lg bg-gray-200 font-bold cursor-pointer">Batal</button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-[#0A4D29] text-white font-bold cursor-pointer">Simpan Jadwal</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- MODAL TAMBAH JADWAL BARU --}}
+    {{-- MODAL TAMBAH JADWAL SEMESTER (DENGAN LOGIKA SEMESTER & TAHUN AJARAN) --}}
     <div id="modalTambah" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
@@ -504,6 +414,34 @@
                         @endforeach
                     </select>
                 </div>
+
+                {{-- Pilihan Tahun Ajaran & Semester (Pengganti Waktu/Durasi) --}}
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block font-bold mb-1">Tahun Ajaran</label>
+                        <select name="tahun_ajaran" required class="w-full border border-gray-300 rounded-lg px-2.5 py-2">
+                            @foreach(['2026-2027', '2027-2028', '2028-2029', '2029-2030', '2030-2031'] as $th)
+                                <option value="{{ $th }}">{{ $th }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-1">Jenis Semester</label>
+                        <select name="semester_jenis" required class="w-full border border-gray-300 rounded-lg px-2.5 py-2">
+                            <option value="Ganjil">Ganjil</option>
+                            <option value="Genap">Genap</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-1">Semester</label>
+                        <select name="semester_angka" required class="w-full border border-gray-300 rounded-lg px-2.5 py-2">
+                            @for($s = 1; $s <= 8; $s++)
+                                <option value="{{ $s }}">Sem. {{ $s }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                </div>
+
                 <div>
                     <label class="block font-bold mb-1">Ruang Kelas</label>
                     <select name="room_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
@@ -512,35 +450,39 @@
                         @endforeach
                     </select>
                 </div>
+
                 <div>
                     <label class="block font-bold mb-1">Nama Dosen / Praktisi Pengajar</label>
                     <input type="text" name="dosen_pengajar" required placeholder="Contoh: Budi Santoso, S.Kom., M.T." class="w-full border border-gray-300 rounded-lg px-3 py-2">
                 </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-bold mb-1">Peran Pengaju</label>
                         <select name="peran_pengaju" class="w-full border border-gray-300 rounded-lg px-3 py-2">
                             <option value="Kaprodi">Kaprodi</option>
-                            <option value="Admin PIJAR">Admin PIJAR</option>
-                            <option value="Admin SUAR">Admin SUAR</option>
+                            <option value="Admin PIJAR & SUAR">Admin PIJAR & SUAR</option>
                         </select>
                     </div>
                     <div>
                         <label class="block font-bold mb-1">Status Awal</label>
                         <select name="status" class="w-full border border-gray-300 rounded-lg px-3 py-2">
                             <option value="pending_approval">Pending Approval</option>
-                            <option value="approved">Approved</option>
+                            <option value="approved">Approved (Auto-Akun)</option>
                         </select>
                     </div>
                 </div>
+
                 <div>
-                    <label class="block font-bold mb-1">Unggah Berkas RPS / RPS Mini (PDF/PPT/DOCX)</label>
+                    <label class="block font-bold mb-1">Unggah Berkas RPS / Silabus (PDF/PPT/DOCX)</label>
                     <input type="file" name="dokumen_bahan_ajar" accept=".pdf,.doc,.docx,.ppt,.pptx" class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-xs bg-gray-50">
                 </div>
+
                 <div class="flex items-center gap-2 pt-1">
                     <input type="checkbox" name="is_external" id="is_external_mj" value="1" class="rounded text-[#0A4D29]">
-                    <label for="is_external_mj" class="font-semibold text-gray-700">Tandai sebagai Jadwal Pihak Eksternal / Praktisi</label>
+                    <label for="is_external_mj" class="font-semibold text-gray-700">Tandai sebagai Program SUAR (Praktisi Industri)</label>
                 </div>
+
                 <div class="flex justify-end gap-2 pt-3 border-t">
                     <button type="button" onclick="document.getElementById('modalTambah').classList.add('hidden')" class="px-4 py-2 rounded-lg bg-gray-200 font-bold cursor-pointer">Batal</button>
                     <button type="submit" class="px-4 py-2 rounded-lg bg-[#0A4D29] text-white font-bold cursor-pointer">Simpan Jadwal</button>
@@ -548,29 +490,97 @@
             </form>
         </div>
     </div>
-    
-    <script>
 
+    {{-- MODAL KUSTOMISASI DATA MASTER RUANGAN & MATA KULIAH (REVISI PAK RIDHO) --}}
+    <div id="modalMaster" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <div>
+                    <h3 class="text-lg font-extrabold text-[#0A4D29]">Kustomisasi Data Master (Ruangan & Mata Kuliah)</h3>
+                    <p class="text-xs text-gray-500">Data yang ditambahkan di sini akan muncul otomatis di pilihan dropdown Kaprodi.</p>
+                </div>
+                <button type="button" onclick="document.getElementById('modalMaster').classList.add('hidden')" class="text-gray-400 hover:text-gray-700 font-bold cursor-pointer">✕</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+                {{-- Form Tambah Ruangan --}}
+                <form action="{{ route('pijar.master.room') }}" method="POST" class="space-y-3 bg-gray-50 p-4 rounded-xl border">
+                    @csrf
+                    <h4 class="font-extrabold text-sm text-gray-900">+ Tambah Ruang Kelas Baru</h4>
+                    <div>
+                        <label class="block font-bold mb-1">Kode Ruang</label>
+                        <input type="text" name="kode_ruang" required placeholder="Contoh: R-304 / Smart Class 2" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-1">Nama / Gedung Ruangan</label>
+                        <input type="text" name="nama_ruang" required placeholder="Contoh: Gedung Utama Lt. 3" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-1">Kapasitas Kursi</label>
+                        <input type="number" name="kapasitas" value="40" min="5" required class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                    </div>
+                    <button type="submit" class="w-full py-2 rounded-lg bg-[#0A4D29] text-white font-bold cursor-pointer">Simpan Ruangan</button>
+                </form>
+
+                {{-- Form Tambah Mata Kuliah --}}
+                <form action="{{ route('pijar.master.course') }}" method="POST" class="space-y-3 bg-gray-50 p-4 rounded-xl border">
+                    @csrf
+                    <h4 class="font-extrabold text-sm text-gray-900">+ Tambah Mata Kuliah Kurikulum</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block font-bold mb-1">Kode MK</label>
+                            <input type="text" name="kode_mk" required placeholder="IS4012" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                        </div>
+                        <div>
+                            <label class="block font-bold mb-1">Bobot SKS</label>
+                            <input type="number" name="sks" value="3" min="1" max="6" required class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-1">Nama Mata Kuliah</label>
+                        <input type="text" name="nama_mk" required placeholder="Contoh: Arsitektur Enterprise" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block font-bold mb-1">Program Studi</label>
+                            <input type="text" name="prodi" required placeholder="Sistem Informasi" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                        </div>
+                        <div>
+                            <label class="block font-bold mb-1">Semester MK</label>
+                            <select name="semester" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                                @for($s = 1; $s <= 8; $s++)
+                                    <option value="{{ $s }}">Semester {{ $s }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-2 rounded-lg bg-[#F57C00] text-white font-bold cursor-pointer">Simpan Mata Kuliah</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
         function openApprovalModal(btn) {
             const d = btn.dataset;
 
             document.getElementById('formDecision').action = '/pijar/schedules/' + d.id;
             document.getElementById('modal_req_id').textContent = 'ID: ' + d.reqid;
             document.getElementById('modal_judul_mk').textContent = 'Persetujuan Jadwal: ' + d.kodemk + ' - ' + d.namamk;
-            document.getElementById('modal_alert_ruang').textContent = d.roomkode;
             document.getElementById('modal_prodi').textContent = d.prodi;
             document.getElementById('modal_sks').textContent = d.sks + ' SKS';
             document.getElementById('modal_kelas').textContent = d.kelas;
             document.getElementById('modal_dosen').textContent = d.dosen;
             document.getElementById('modal_pengaju').textContent = d.pengaju;
             document.getElementById('modal_waktu_ajuan').textContent = d.waktuajuan;
-            document.getElementById('modal_hari_sesi').textContent = d.harisesi;
-            document.getElementById('modal_waktu_sesi').textContent = d.waktusesi;
+            document.getElementById('modal_tahun_ajaran').textContent = d.tahunajaran;
+            document.getElementById('modal_semester_info').textContent = d.semesterjenis + ' (Semester ' + d.semesterangka + ')';
             document.getElementById('modal_ruang_info').textContent = d.roomkode;
             document.getElementById('modal_ruang_kapasitas').textContent = 'Kapasitas: ' + d.roomkapasitas + ' Kursi';
-            document.getElementById('modal_catatan_pengaju').textContent = d.catatan;
             document.getElementById('input_dosen').value = d.dosen;
             document.getElementById('input_room_id').value = d.roomid;
+            document.getElementById('input_email_kampus').value = d.email;
+            document.getElementById('input_alasan_penolakan').value = d.alasan;
             document.getElementById('modal_pertemuan_ke').textContent = d.pertemuanke;
             document.getElementById('modal_kuota_mk').textContent = d.kuotamk;
             document.getElementById('modal_kuota_prodi').textContent = d.kuotaprodi;
@@ -578,12 +588,12 @@
             const badge = document.getElementById('modal_badge_status');
             if (d.status === 'approved') {
                 badge.className = 'bg-[#D5F5E3] text-[#0A4D29] text-[11px] font-bold px-2.5 py-0.5 rounded-full';
-                badge.textContent = '✓ Jadwal Sudah Disetujui';
+                badge.textContent = '✓ Jadwal Sudah Disetujui (ACC)';
             } else if (d.status === 'revision_requested') {
                 badge.className = 'bg-[#FADBD8] text-[#C0392B] text-[11px] font-bold px-2.5 py-0.5 rounded-full';
                 badge.textContent = '! Menunggu Revisi Pengaju';
             } else if (d.status === 'cancelled') {
-                badge.className = 'bg-gray-200 text-gray-700 text-[11px] font-bold px-2.5 py-0.5 rounded-full';
+                badge.className = 'bg-red-100 text-red-700 text-[11px] font-bold px-2.5 py-0.5 rounded-full';
                 badge.textContent = '✕ Jadwal Ditolak';
             } else {
                 badge.className = 'bg-[#FFF0E0] text-[#F57C00] text-[11px] font-bold px-2.5 py-0.5 rounded-full';
@@ -591,18 +601,18 @@
             }
 
             const docLink = document.getElementById('modal_link_dokumen');
-                    if (d.dokumen) {
-                        docLink.href = d.dokumen;
-                        docLink.textContent = '📄 Buka File RPS / Bahan Ajar';
-                        docLink.classList.remove('pointer-events-none', 'text-gray-400');
-                        docLink.classList.add('text-[#F57C00]');
-                    } else {
-                        docLink.href = '#';
-                        docLink.textContent = 'Belum Ada File Diunggah';
-                        docLink.classList.add('pointer-events-none', 'text-gray-400');
-                        docLink.classList.remove('text-[#F57C00]');
-                    }
-            
+            if (d.dokumen) {
+                docLink.href = d.dokumen;
+                docLink.textContent = '📄 Buka File RPS / Silabus';
+                docLink.classList.remove('pointer-events-none', 'text-gray-400');
+                docLink.classList.add('text-[#F57C00]');
+            } else {
+                docLink.href = '#';
+                docLink.textContent = 'Belum Ada File Diunggah';
+                docLink.classList.add('pointer-events-none', 'text-gray-400');
+                docLink.classList.remove('text-[#F57C00]');
+            }
+
             document.getElementById('modalApproval').classList.remove('hidden');
         }
 
@@ -610,6 +620,5 @@
             document.getElementById('modalApproval').classList.add('hidden');
         }
     </script>
-
 </body>
 </html>

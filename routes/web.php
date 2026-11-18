@@ -1,10 +1,11 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PijarDashboardController; // <-- 1. Tambahkan ini di baris ke-4
+use App\Http\Controllers\PijarDashboardController;
+use App\Http\Controllers\PortalPenggunaController;
+use App\Http\Controllers\SuarDashboardController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\SuarDashboardController;   
 
 Route::get('/', fn() => redirect('/login'));
 
@@ -16,42 +17,38 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Penangkap redirect default Laravel
+    // Wajib Ganti Kata Sandi Awal bagi Akun Baru Dosen & Praktisi
+    Route::get('/ganti-sandi-awal', [PortalPenggunaController::class, 'showChangePassword'])->name('password.force');
+    Route::post('/ganti-sandi-awal', [PortalPenggunaController::class, 'updateChangePassword'])->name('password.force.update');
+
+    // Penangkap redirect default Laravel sesuai Role
     Route::get('/dashboard', function () {
-        return match (Auth::user()->role) {
-            'kaprodi'     => redirect()->route('kaprodi.dashboard'),
-            'admin_suar'  => redirect()->route('suar.dashboard'),
-            'admin_pijar' => redirect()->route('pijar.dashboard'),
-            'admin_kerma' => redirect()->route('kerma.dashboard'),
-            default       => 'Dashboard Umum',
+        $user = Auth::user();
+        if ($user->must_change_password) {
+            return redirect()->route('password.force');
+        }
+
+        return match ($user->role) {
+            'admin', 'admin_pijar', 'admin_suar' => redirect()->route('pijar.dashboard'),
+            'kaprodi'                            => redirect()->route('kaprodi.dashboard'),
+            'dosen', 'praktisi'                  => redirect()->route('dosen.dashboard'),
+            'admin_kerma'                        => redirect()->route('pijar.jadwal-eksternal'),
+            default                              => redirect()->route('dosen.dashboard'),
         };
     })->name('dashboard');
 
     Route::get('/home', fn() => redirect()->route('dashboard'));
 
-    // Placeholder Dashboard sementara untuk role selain PIJAR
-    $dashboardView = function ($title) {
-        return '
-            <div style="font-family: sans-serif; padding: 40px;">
-                <h1>' . $title . '</h1>
-                <p>Login sebagai: <strong>' . Auth::user()->name . '</strong> (' . Auth::user()->email . ')</p>
-                <form action="' . route('logout') . '" method="POST">
-                    ' . csrf_field() . '
-                    <button type="submit" style="padding: 10px 20px; background: #F57C00; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
-                        Logout / Ganti Akun
-                    </button>
-                </form>
-            </div>
-        ';
-    };
+    // Portal Kaprodi (Pengajuan Praktisi & Pantau Kredensial Akun ACC)
+    Route::get('/kaprodi/dashboard', [PortalPenggunaController::class, 'kaprodiDashboard'])->name('kaprodi.dashboard');
+    Route::post('/kaprodi/pengajuan', [PortalPenggunaController::class, 'kaprodiStorePengajuan'])->name('kaprodi.pengajuan.store');
 
-    Route::get('/kaprodi/dashboard', fn() => $dashboardView('Dashboard Kaprodi'))->name('kaprodi.dashboard');
-    Route::get('/suar/dashboard', fn() => $dashboardView('Dashboard Admin SUAR'))->name('suar.dashboard');
-    Route::get('/pijar/dashboard', [PijarDashboardController::class, 'index'])->name('pijar.dashboard');
-    Route::get('/kerma/dashboard', fn() => $dashboardView('Dashboard Admin Kerma'))->name('kerma.dashboard');
-    Route::get('/pijar/dashboard', [PijarDashboardController::class, 'index'])->name('pijar.dashboard');
-    Route::post('/pijar/schedules', [PijarDashboardController::class, 'store'])->name('pijar.schedules.store');
-    Route::put('/pijar/schedules/{schedule}', [PijarDashboardController::class, 'update'])->name('pijar.schedules.update');
+    // Portal Dosen & Praktisi (Unggah RPS, Silabus, Modul 1-13 & Laporan G-Drive Foto)
+    Route::get('/dosen/dashboard', [PortalPenggunaController::class, 'dosenDashboard'])->name('dosen.dashboard');
+    Route::post('/dosen/schedules/{schedule}/perangkat', [PortalPenggunaController::class, 'dosenUploadPerangkat'])->name('dosen.upload.perangkat');
+    Route::post('/dosen/schedules/{schedule}/laporan', [PortalPenggunaController::class, 'dosenSubmitLaporan'])->name('dosen.submit.laporan');
+
+    // Portal Admin Terpadu — Modul PIJAR
     Route::get('/pijar/dashboard', [PijarDashboardController::class, 'index'])->name('pijar.dashboard');
     Route::get('/pijar/manajemen-jadwal', [PijarDashboardController::class, 'manajemenJadwal'])->name('pijar.manajemen-jadwal');
     Route::post('/pijar/schedules', [PijarDashboardController::class, 'store'])->name('pijar.schedules.store');
@@ -63,12 +60,20 @@ Route::middleware('auth')->group(function () {
     Route::put('/pijar/manajemen-akun/{user}', [PijarDashboardController::class, 'updateUser'])->name('pijar.users.update');
     Route::get('/pijar/rekap-pengajaran', [PijarDashboardController::class, 'rekapPengajaran'])->name('pijar.rekap-pengajaran');
     Route::get('/pijar/rekap-pengajaran/export', [PijarDashboardController::class, 'exportRekapExcel'])->name('pijar.rekap-pengajaran.export');
-    // Portal Admin SUAR
-        Route::get('/suar/dashboard', [SuarDashboardController::class, 'index'])->name('suar.dashboard');
-        Route::put('/suar/schedules/{schedule}/assign', [SuarDashboardController::class, 'assignPractitioner'])->name('suar.schedules.assign');
+    Route::post('/pijar/master/room', [PijarDashboardController::class, 'storeRoom'])->name('pijar.master.room');
+    Route::post('/pijar/master/course', [PijarDashboardController::class, 'storeCourse'])->name('pijar.master.course');
 
-        Route::get('/suar/praktisi', [SuarDashboardController::class, 'praktisi'])->name('suar.praktisi');
-        Route::post('/suar/praktisi', [SuarDashboardController::class, 'storePractitioner'])->name('suar.praktisi.store');
-        Route::put('/suar/praktisi/{practitioner}', [SuarDashboardController::class, 'updatePractitioner'])->name('suar.praktisi.update');
-        Route::delete('/suar/praktisi/{practitioner}', [SuarDashboardController::class, 'destroyPractitioner'])->name('suar.praktisi.destroy');
-    });
+    // Fitur Unduh Template & Impor Excel/CSV (Dosen, Peran, & Mata Kuliah)
+    Route::get('/pijar/import/template-users', [PijarDashboardController::class, 'downloadTemplateUsers'])->name('pijar.import.template-users');
+    Route::post('/pijar/import/users', [PijarDashboardController::class, 'importUsersCsv'])->name('pijar.import.users');
+    Route::get('/pijar/import/template-courses', [PijarDashboardController::class, 'downloadTemplateCourses'])->name('pijar.import.template-courses');
+    Route::post('/pijar/import/courses', [PijarDashboardController::class, 'importCoursesCsv'])->name('pijar.import.courses');
+
+    // Portal Admin Terpadu — Modul SUAR
+    Route::get('/suar/dashboard', [SuarDashboardController::class, 'index'])->name('suar.dashboard');
+    Route::put('/suar/schedules/{schedule}/assign', [SuarDashboardController::class, 'assignPractitioner'])->name('suar.schedules.assign');
+    Route::get('/suar/praktisi', [SuarDashboardController::class, 'praktisi'])->name('suar.praktisi');
+    Route::post('/suar/praktisi', [SuarDashboardController::class, 'storePractitioner'])->name('suar.praktisi.store');
+    Route::put('/suar/praktisi/{practitioner}', [SuarDashboardController::class, 'updatePractitioner'])->name('suar.praktisi.update');
+    Route::delete('/suar/praktisi/{practitioner}', [SuarDashboardController::class, 'destroyPractitioner'])->name('suar.praktisi.destroy');
+});

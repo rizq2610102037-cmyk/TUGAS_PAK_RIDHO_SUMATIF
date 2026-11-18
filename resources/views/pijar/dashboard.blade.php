@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin PIJAR - Pradita University</title>
+    <title>Dashboard Admin PIJAR & SUAR - Pradita University</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-[#FAFCEB] font-sans text-gray-800 min-h-screen flex flex-col">
 
@@ -54,65 +55,22 @@
     <div class="flex-1 p-4 md:p-6 max-w-[1440px] w-full mx-auto space-y-6">
 
         @if (session('success'))
-    <div class="bg-[#D5F5E3] border border-[#0A4D29] text-[#0A4D29] px-4 py-3 rounded-xl text-xs font-bold flex justify-between items-center shadow-sm">
-        <span>✅ {{ session('success') }}</span>
-        <button onclick="this.parentElement.remove()" class="text-sm font-extrabold cursor-pointer">✕</button>
-    </div>
+            <div class="bg-[#D5F5E3] border border-[#0A4D29] text-[#0A4D29] px-4 py-3 rounded-xl text-xs font-bold flex justify-between items-center shadow-sm">
+                <span>✅ {{ session('success') }}</span>
+                <button onclick="this.parentElement.remove()" class="text-sm font-extrabold cursor-pointer">✕</button>
+            </div>
         @endif
 
-        {{-- BAGIAN ATAS: SIDEBAR + KONTEN UTAMA --}}
-        <div class="flex flex-col lg:flex-row gap-6 items-start">
+        {{-- BAGIAN ATAS: SIDEBAR TERPADU + KONTEN UTAMA --}}
+        <div class="flex flex-col lg:flex-row gap-6 items-start w-full">
 
-            {{-- SIDEBAR MENU --}}
-            <aside class="w-full lg:w-64 bg-[#0A4D29] rounded-2xl p-4 text-white flex flex-col justify-between lg:min-h-[670px] shrink-0 shadow-md">
-                <nav class="space-y-2">
-                    <a href="{{ route('pijar.dashboard') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[#B7F4D1] text-[#0A4D29] font-bold text-sm shadow-sm">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm8 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM3 12a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1v-4zm8 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
-                        Dashboard
-                    </a>
-
-                    <a href="{{ route('pijar.manajemen-jadwal') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        Manajemen Jadwal
-                    </a>
-
-                    <a href="{{ route('pijar.jadwal-eksternal') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
-                        Jadwal Pihak Eksternal
-                    </a>
-
-                    <a href="{{ route('pijar.manajemen-akun') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        Manajemen Akun
-                    </a>
-
-                    <a href="{{ route('pijar.rekap-pengajaran') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm font-medium">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        Rekap Pengajaran
-                    </a>
-                </nav>
-
-                {{-- Menu Bawah Sidebar --}}
-                <div class="pt-8 mt-8 border-t border-white/15 space-y-2">
-                    <a href="#" class="flex items-center gap-3 px-4 py-2 rounded-lg text-[#B7F4D1] hover:bg-white/10 transition text-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        Pengaturan
-                    </a>
-
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-[#B7F4D1] hover:bg-red-500/20 hover:text-white transition text-sm cursor-pointer text-left">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                            Keluar
-                        </button>
-                    </form>
-                </div>
-            </aside>
+            {{-- SIDEBAR TERPADU --}}
+            @include('layouts.sidebar-admin')
 
             {{-- KONTEN UTAMA KANAN --}}
-            <div class="flex-1 w-full space-y-5">
+            <div class="flex-1 min-w-0 w-full space-y-5">
 
-                {{-- 1. WELCOME BANNER & 4 STATUS BAR (DINAMIS DARI DB) --}}
+                {{-- 1. WELCOME BANNER & 4 STATUS BAR --}}
                 <div class="bg-[#0A4D29] rounded-2xl p-6 text-white shadow-md">
                     <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
                         <div>
@@ -120,28 +78,28 @@
                                 Semester Ganjil - 2026/2027
                             </span>
                             <h2 class="text-2xl md:text-3xl font-extrabold text-[#B7F4D1]">Selamat Datang, {{ Auth::user()->name }}!</h2>
-                            <p class="italic text-white/90 text-sm mb-3">Bagaimana kabar Anda hari ini?</p>
+                            <p class="italic text-white/90 text-sm mb-3">Admin Terpadu PIJAR & SUAR — Universitas Pradita</p>
                             <p class="text-xs text-white/80 max-w-xl leading-relaxed">
-                                Berikut adalah ringkasan aktivitas akademik hari ini, sinkronisasi ruang kuliah, dan verifikasi dosen eksternal secara langsung.
+                                Berikut adalah ringkasan aktivitas akademik hari ini, sinkronisasi ruang kuliah, grafik perbandingan PIJAR & SUAR, serta pemantauan unggahan dokumen dosen.
                             </p>
                         </div>
 
                         <div class="flex flex-col gap-2.5 shrink-0">
                             <button onclick="window.print()" class="flex items-center gap-2 bg-[#E8F5E9] hover:bg-white text-[#0A4D29] font-bold text-xs px-4 py-2 rounded-full transition cursor-pointer shadow-sm">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
-                                Cetak Ringkasan Eksekutif
+                                Unduh / Cetak Laporan Tahunan
                             </button>
                         </div>
                     </div>
 
-                    {{-- 4 Kotak Indikator Mint (Tarik dari DB) --}}
+                    {{-- 4 Kotak Indikator Mint --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-5">
                         <div class="bg-[#D5F5E3] text-[#0A4D29] rounded-xl p-3 text-center">
                             <p class="text-xs font-semibold">Ketersediaan Ruang</p>
                             <p class="text-base font-extrabold mt-0.5">({{ $ruangTersedia }}/{{ $totalRuang }} RUANG)</p>
                         </div>
                         <div class="bg-[#D5F5E3] text-[#0A4D29] rounded-xl p-3 text-center">
-                            <p class="text-xs font-semibold">Dosen Aktif Hari Ini</p>
+                            <p class="text-xs font-semibold">Dosen & Praktisi Aktif</p>
                             <p class="text-base font-extrabold mt-0.5">{{ $dosenAktif }} PENGAJAR</p>
                         </div>
                         <div class="bg-[#D5F5E3] text-[#0A4D29] rounded-xl p-3 text-center">
@@ -155,9 +113,8 @@
                     </div>
                 </div>
 
-                {{-- 2. 4 KARTU METRIK UTAMA (DINAMIS DARI DB) --}}
+                {{-- 2. 4 KARTU METRIK UTAMA --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                    {{-- Card 1: Total Jadwal --}}
                     <div class="bg-[#0A4D29] text-white rounded-2xl p-4 flex flex-col justify-between shadow-sm">
                         <div class="flex justify-end">
                             <span class="bg-[#B7F4D1] text-[#0A4D29] text-[10px] font-bold px-2.5 py-0.5 rounded-full">Semua Prodi</span>
@@ -169,10 +126,9 @@
                                 <span class="text-xs font-bold text-[#B7F4D1]">Data</span>
                             </div>
                         </div>
-                        <p class="text-[11px] text-white/80">Total pengajuan masuk di sistem.</p>
+                        <p class="text-[11px] text-white/80">Total pengajuan PIJAR & SUAR.</p>
                     </div>
 
-                    {{-- Card 2: Menunggu Approval --}}
                     <div class="bg-[#F57C00] text-white rounded-2xl p-4 flex flex-col justify-between shadow-sm">
                         <div class="flex justify-end">
                             <span class="bg-[#FFE57F] text-gray-900 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Tindakan Diperlukan</span>
@@ -184,10 +140,9 @@
                                 <span class="text-xs font-semibold">Perlu Verifikasi</span>
                             </div>
                         </div>
-                        <p class="text-[11px] font-medium text-white/95">Menunggu persetujuan Admin PIJAR.</p>
+                        <p class="text-[11px] font-medium text-white/95">Menunggu keputusan Admin.</p>
                     </div>
 
-                    {{-- Card 3: Jadwal Disetujui --}}
                     <div class="bg-[#0A4D29] text-white rounded-2xl p-4 flex flex-col justify-between shadow-sm">
                         <div class="flex justify-end">
                             <span class="bg-[#B7F4D1] text-[#0A4D29] text-[10px] font-bold px-2.5 py-0.5 rounded-full">Terverifikasi</span>
@@ -199,13 +154,12 @@
                                 <span class="text-xs font-semibold text-[#B7F4D1]">Valid</span>
                             </div>
                         </div>
-                        <p class="text-[11px] text-white/80">Siap disiarkan ke kalender mahasiswa.</p>
+                        <p class="text-[11px] text-white/80">Akun email kampus pengajar aktif.</p>
                     </div>
 
-                    {{-- Card 4: Jadwal Pihak Eksternal --}}
                     <div class="bg-[#F57C00] text-white rounded-2xl p-4 flex flex-col justify-between shadow-sm">
                         <div class="flex justify-end">
-                            <span class="bg-[#FFE57F] text-gray-900 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Siap & Terjadwal</span>
+                            <span class="bg-[#FFE57F] text-gray-900 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Program SUAR</span>
                         </div>
                         <div class="my-2">
                             <p class="text-[11px] uppercase tracking-wider text-white/90 font-semibold">JADWAL PIHAK EKSTERNAL</p>
@@ -218,7 +172,58 @@
                     </div>
                 </div>
 
-                {{-- 3. WEEKLY OVERVIEW & MONTHLY OVERVIEW (DINAMIS DARI DB) --}}
+                {{-- 3. GRAFIK ANALITIK REVISI PAK RIDHO (PIJAR VS SUAR 5 TAHUN & PER PRODI) --}}
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <h3 class="text-base font-extrabold text-gray-900">Tren PIJAR vs SUAR (5 Tahun)</h3>
+                                <p class="text-[11px] text-gray-500">Minggu ini: <strong>{{ $weeklyPijar }} PIJAR</strong> &bull; <strong>{{ $weeklySuar }} SUAR</strong></p>
+                            </div>
+                            <span class="bg-[#E8F5E9] text-[#0A4D29] text-[10px] font-bold px-2.5 py-1 rounded-full">2026 - 2031</span>
+                        </div>
+                        <canvas id="chartPijarSuar" height="150"></canvas>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <h3 class="text-base font-extrabold text-gray-900">Perbandingan Penggunaan SUAR per Prodi</h3>
+                                <p class="text-[11px] text-gray-500">Peringkat prodi terbanyak hingga tersedikit memakai praktisi</p>
+                            </div>
+                            <span class="bg-[#FFF0E0] text-[#F57C00] text-[10px] font-bold px-2.5 py-1 rounded-full">Per Prodi</span>
+                        </div>
+                        <canvas id="chartSuarProdi" height="150"></canvas>
+                    </div>
+                </div>
+
+                {{-- 4. PEMANTAUAN UNGGAHAN DOKUMEN DOSEN & PRAKTISI (RPS / MODUL) --}}
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                        <div>
+                            <h3 class="text-base font-extrabold text-gray-900">Pemantauan Unggahan Dokumen Dosen & Praktisi</h3>
+                            <p class="text-xs text-gray-500">Status kelengkapan dokumen pra-pelaksanaan (RPS, Silabus, Modul 1–13) untuk jadwal yang telah di-ACC.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 text-xs font-bold">
+                            <span class="px-3 py-1 rounded-full bg-[#D5F5E3] text-[#0A4D29]">✓ Sudah Unggah: {{ $sudahUnggah->count() }}</span>
+                            <span class="px-3 py-1 rounded-full bg-[#FFF0E0] text-[#F57C00]">⚠️ Belum Unggah: {{ $belumUnggah->count() }}</span>
+                        </div>
+                    </div>
+
+                    @if($belumUnggah->count() > 0)
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            @foreach($belumUnggah->take(8) as $itemBelum)
+                                <span class="text-[11px] bg-red-50 border border-red-200 text-red-700 px-3 py-1 rounded-lg font-semibold">
+                                    {{ $itemBelum->praktisi_nama ?: $itemBelum->dosen_pengajar }} — {{ $itemBelum->course->nama_mk ?? '-' }}
+                                </span>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-xs text-[#0A4D29] font-semibold">Seluruh dosen/praktisi pada jadwal disetujui sudah mengunggah dokumen RPS/Modul.</p>
+                    @endif
+                </div>
+
+                {{-- 5. WEEKLY OVERVIEW & MONTHLY OVERVIEW --}}
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
                     
                     {{-- Weekly Overview (7 Kolom) --}}
@@ -232,7 +237,7 @@
 
                             <div class="grid grid-cols-3 gap-2.5 mt-4">
                                 <div class="bg-[#D5F5E3] rounded-xl p-3">
-                                    <p class="text-[11px] font-bold text-[#0A4D29]">Kelas Terlaksana</p>
+                                    <p class="text-[11px] font-bold text-[#0A4D29]">Kelas Disetujui</p>
                                     <p class="text-2xl font-extrabold text-[#0A4D29] my-0.5">{{ $weeklyTerlaksana }}</p>
                                     <p class="text-[10px] text-[#0A4D29]">Sesuai Agenda</p>
                                 </div>
@@ -242,14 +247,13 @@
                                     <p class="text-[10px] text-[#F57C00]">Tinjau Segera</p>
                                 </div>
                                 <div class="bg-[#FADBD8] rounded-xl p-3">
-                                    <p class="text-[11px] font-bold text-[#C0392B]">Revisi / Dibatalkan</p>
+                                    <p class="text-[11px] font-bold text-[#C0392B]">Revisi / Ditolak</p>
                                     <p class="text-2xl font-extrabold text-[#C0392B] my-0.5">{{ $weeklyBatal }}</p>
                                     <p class="text-[10px] text-[#C0392B]">Perlu Penyesuaian</p>
                                 </div>
                             </div>
                         </div>
 
-                        {{-- Stacked Bar Chart Visual --}}
                         <div class="mt-6">
                             <div class="grid grid-cols-7 gap-3 h-36 items-end px-2">
                                 <div class="h-full flex flex-col justify-end rounded-sm overflow-hidden">
@@ -321,7 +325,6 @@
                                     </div>
                                 </div>
 
-                                {{-- Donut Chart SVG Dinamis --}}
                                 <div class="relative w-20 h-20 flex items-center justify-center">
                                     <svg class="w-20 h-20 -rotate-90" viewBox="0 0 36 36">
                                         <path class="text-[#FFF0E0]" stroke-width="3.8" stroke="currentColor" fill="none"
@@ -337,7 +340,6 @@
                             </div>
                         </div>
 
-                        {{-- Progress Bars Bawah Dinamis --}}
                         <div class="space-y-4 mt-5">
                             <div>
                                 <div class="flex justify-between text-xs font-bold mb-1">
@@ -345,7 +347,7 @@
                                     <span class="text-gray-600">{{ $monthlyTerlaksana }} Sesi</span>
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                    <div class="bg-[#0A4D29] h-2.5 rounded-full w-(--w)" style="--w: {{ $monthlyPersentase }}%;"></div>
+                                    <div class="bg-[#0A4D29] h-2.5 rounded-full w-[var(--w)]" style="--w: {{ $monthlyPersentase }}%;"></div>
                                 </div>
                             </div>
 
@@ -356,18 +358,18 @@
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-2.5">
                                     @php $persenBelum = $monthlyTotal > 0 ? round(($monthlyBelum / $monthlyTotal) * 100) : 0; @endphp
-                                    <div class="bg-[#5D1916] h-2.5 rounded-full w-(--w)" style="--w: {{ $persenBelum }}%;"></div>
+                                   <div class="bg-[#5D1916] h-2.5 rounded-full w-[var(--w)]" style="--w: {{ $persenBelum }}%;"></div>
                                 </div>
                             </div>
 
                             <div>
                                 <div class="flex justify-between text-xs font-bold mb-1">
-                                    <span class="text-[#8E44AD]">• Total Pengajaran Eksternal</span>
+                                    <span class="text-[#8E44AD]">• Total Pengajaran Eksternal (SUAR)</span>
                                     <span class="text-gray-600">{{ $monthlyEksternal }} Sesi</span>
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-2.5">
                                     @php $persenEksternal = $monthlyTotal > 0 ? round(($monthlyEksternal / $monthlyTotal) * 100) : 0; @endphp
-                                    <div class="bg-[#5D1916] h-2.5 rounded-full w-(--w)" style="--w: {{ $persenEksternal }}%;"></div>
+                                    <div class="bg-[#5D1916] h-2.5 rounded-full w-[var(--w)]" style="--w: {{ $persenEksternal }}%;"></div>
                                 </div>
                             </div>
                         </div>
@@ -377,7 +379,7 @@
             </div>
         </div>
 
-        {{-- BAGIAN BAWAH: AKTIVITAS PENGAJUAN TERBARU (100% DINAMIS DARI DB) --}}
+        {{-- BAGIAN BAWAH: AKTIVITAS PENGAJUAN TERBARU --}}
         <section class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
             <div class="bg-[#F57C00] px-6 py-4 text-white flex items-center justify-between">
                 <div>
@@ -397,7 +399,7 @@
                         <tr class="bg-[#F7A854] text-gray-900 text-xs font-extrabold uppercase tracking-wider">
                             <th class="py-3 px-4 border-r border-white/40 w-12 text-center">NO.</th>
                             <th class="py-3 px-4 border-r border-white/40">NAMA KEGIATAN / NAMA KULIAH</th>
-                            <th class="py-3 px-4 border-r border-white/40">PROGRAM STUDI</th>
+                            <th class="py-3 px-4 border-r border-white/40">SEMESTER & PRODI</th>
                             <th class="py-3 px-4 border-r border-white/40">PENGAJU DAN PERAN</th>
                             <th class="py-3 px-4 border-r border-white/40">TANGGAL PENGAJUAN</th>
                             <th class="py-3 px-4 border-r border-white/40 text-center">STATUS</th>
@@ -414,7 +416,10 @@
                                         <span class="underline">{{ $item->course->kode_mk }}</span> - {{ $item->room->kode_ruang }} - {{ $item->course->sks }} SKS
                                     </p>
                                 </td>
-                                <td class="py-4 px-4 font-medium">{{ $item->course->prodi }}</td>
+                                <td class="py-4 px-4">
+                                    <p class="font-bold text-gray-800">{{ $item->course->prodi }}</p>
+                                    <p class="text-[11px] text-gray-500">TA {{ $item->tahun_ajaran ?? '2026-2027' }} • Sem. {{ $item->semester_jenis ?? 'Ganjil' }} ({{ $item->semester_angka ?? 1 }})</p>
+                                </td>
                                 <td class="py-4 px-4">
                                     <p class="font-bold text-gray-900 whitespace-pre-line">{{ $item->dosen_pengajar }}</p>
                                     <p class="italic text-gray-500">{{ $item->peran_pengaju }}</p>
@@ -435,20 +440,19 @@
                                         </span>
                                     @else
                                         <span class="inline-block bg-gray-500 text-white font-bold px-3 py-1 rounded-full text-[11px]">
-                                            Cancelled
+                                            Ditolak / Cancelled
                                         </span>
+                                        @if($item->alasan_penolakan)
+                                            <p class="text-[10px] text-red-600 mt-1">{{ $item->alasan_penolakan }}</p>
+                                        @endif
                                     @endif
                                 </td>
                                 
                                 <td class="py-4 px-4 text-center">
                                     <button 
                                         type="button"
+                                        data-item='@json($item)'
                                         onclick="openEditModal(this)"
-                                        data-id="{{ $item->id }}"
-                                        data-mk="{{ $item->course->nama_mk }}"
-                                        data-room="{{ $item->room_id }}"
-                                        data-dosen="{{ $item->dosen_pengajar }}"
-                                        data-status="{{ $item->status }}"
                                         class="bg-[#B7F4D1] hover:bg-[#9ae8bc] text-[#0A4D29] font-bold px-3.5 py-1 rounded-full text-[11px] transition cursor-pointer">
                                         @if ($item->status === 'pending_approval')
                                             Review Pengajuan
@@ -477,7 +481,7 @@
     <div id="modalEdit" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-lg font-extrabold text-[#0A4D29]">Review & Edit Jadwal</h3>
+                <h3 class="text-lg font-extrabold text-[#0A4D29]">Review & Keputusan Jadwal</h3>
                 <button onclick="document.getElementById('modalEdit').classList.add('hidden')" class="text-gray-500 hover:text-gray-800 font-bold cursor-pointer">✕</button>
             </div>
             <form id="formEdit" method="POST" class="space-y-3 text-xs">
@@ -496,17 +500,25 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block font-bold mb-1">Dosen Pengajar</label>
+                    <label class="block font-bold mb-1">Dosen / Praktisi Pengajar</label>
                     <input type="text" name="dosen_pengajar" id="edit_dosen" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
                 </div>
                 <div>
+                    <label class="block font-bold mb-1">Email Kampus Pengajar (Otomatis aktifkan akun saat Approved)</label>
+                    <input type="email" name="dosen_email_kampus" id="edit_email" placeholder="Kosongkan untuk generate otomatis (@pradita.ac.id)" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                </div>
+                <div>
                     <label class="block font-bold mb-1">Keputusan Status</label>
-                    <select name="status" id="edit_status" class="w-full border border-gray-300 rounded-lg px-3 py-2 font-bold">
+                    <select name="status" id="edit_status" onchange="toggleAlasanPenolakan()" class="w-full border border-gray-300 rounded-lg px-3 py-2 font-bold">
                         <option value="pending_approval">Pending Approval</option>
-                        <option value="approved">Approved (Setujui)</option>
+                        <option value="approved">Approved (Setujui & Buat Akun Pengajar)</option>
                         <option value="revision_requested">Revision Requested (Minta Revisi)</option>
-                        <option value="cancelled">Cancelled (Batalkan)</option>
+                        <option value="cancelled">Cancelled (Tolak Pengajuan)</option>
                     </select>
+                </div>
+                <div id="box_alasan_penolakan" class="hidden">
+                    <label class="block font-bold text-red-700 mb-1">Alasan Penolakan (Tampil ke Kaprodi)</label>
+                    <textarea name="alasan_penolakan" id="edit_alasan" rows="2" placeholder="Tuliskan alasan penolakan..." class="w-full border border-red-300 rounded-lg px-3 py-2 bg-red-50"></textarea>
                 </div>
                 <div class="flex justify-end gap-2 pt-3 border-t">
                     <button type="button" onclick="document.getElementById('modalEdit').classList.add('hidden')" class="px-4 py-2 rounded-lg bg-gray-200 font-bold cursor-pointer">Batal</button>
@@ -517,20 +529,55 @@
     </div>
 
     <script>
-    function openEditModal(button) {
-        const { id, mk, room, dosen, status } = button.dataset;
+        function openEditModal(item) {
+            document.getElementById('formEdit').action = '/pijar/schedules/' + item.id;
+            document.getElementById('edit_mk').value = item.course ? item.course.nama_mk : '';
+            document.getElementById('edit_room').value = item.room_id;
+            document.getElementById('edit_dosen').value = item.dosen_pengajar || '';
+            document.getElementById('edit_email').value = item.dosen_email_kampus || '';
+            document.getElementById('edit_status').value = item.status;
+            document.getElementById('edit_alasan').value = item.alasan_penolakan || '';
+            toggleAlasanPenolakan();
+            document.getElementById('modalEdit').classList.remove('hidden');
+        }
 
-        document.getElementById('formEdit').action = '/pijar/schedules/' + id;
-        document.getElementById('edit_mk').value = mk;
-        document.getElementById('edit_room').value = room;
-        document.getElementById('edit_dosen').value = dosen;
-        document.getElementById('edit_status').value = status;
-        document.getElementById('modalEdit').classList.remove('hidden');
-    }
-</script>
+        function toggleAlasanPenolakan() {
+            const st = document.getElementById('edit_status').value;
+            document.getElementById('box_alasan_penolakan').classList.toggle('hidden', st !== 'cancelled');
+        }
 
+        // Chart 1: PIJAR vs SUAR 5 Tahun
+        // Chart 1: PIJAR vs SUAR 5 Tahun
+        const daftarTahun = JSON.parse('{!! json_encode($daftarTahun) !!}');
+        const chartPijar  = JSON.parse('{!! json_encode($chartPijar) !!}');
+        const chartSuar   = JSON.parse('{!! json_encode($chartSuar) !!}');
 
+        new Chart(document.getElementById('chartPijarSuar'), {
+            type: 'bar',
+            data: {
+                labels: daftarTahun,
+                datasets: [
+                    { label: 'PIJAR (Reguler)', data: chartPijar, backgroundColor: '#0A4D29', borderRadius: 6 },
+                    { label: 'SUAR (Praktisi)', data: chartSuar, backgroundColor: '#F57C00', borderRadius: 6 }
+                ]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
 
+        // Chart 2: Perbandingan SUAR per Prodi
+        const prodiLabels = JSON.parse('{!! json_encode($prodiLabels) !!}');
+        const prodiCounts = JSON.parse('{!! json_encode($prodiCounts) !!}');
+
+        new Chart(document.getElementById('chartSuarProdi'), {
+            type: 'bar',
+            data: {
+                labels: prodiLabels,
+                datasets: [
+                    { label: 'Kelas SUAR', data: prodiCounts, backgroundColor: '#0A4D29', borderRadius: 6 }
+                ]
+            },
+            options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } } }
+        });
+    </script>
 </body>
 </html>
-

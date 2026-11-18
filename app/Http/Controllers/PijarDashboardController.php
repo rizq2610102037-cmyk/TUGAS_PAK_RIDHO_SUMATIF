@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Course;
 use App\Models\Room;
 use App\Models\Schedule;
@@ -9,6 +10,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class PijarDashboardController extends Controller
@@ -28,7 +30,7 @@ class PijarDashboardController extends Controller
         $jadwalDisetujui = Schedule::where('status', 'approved')->count();
         $jadwalEksternal = Schedule::where('is_external', true)->count();
 
-        // 3. Statistik Weekly Overview
+        // 3. Statistik Weekly Overview (PIJAR & SUAR Mingguan)
         $startOfWeek = Carbon::now()->startOfWeek();
         $endOfWeek   = Carbon::now()->endOfWeek();
 
@@ -38,6 +40,11 @@ class PijarDashboardController extends Controller
             ->where('status', 'pending_approval')->count();
         $weeklyBatal = Schedule::whereBetween('tanggal_pengajuan', [$startOfWeek, $endOfWeek])
             ->whereIn('status', ['cancelled', 'revision_requested'])->count();
+
+        $weeklyPijar = Schedule::whereBetween('tanggal_pengajuan', [$startOfWeek, $endOfWeek])
+            ->where('is_external', false)->count();
+        $weeklySuar = Schedule::whereBetween('tanggal_pengajuan', [$startOfWeek, $endOfWeek])
+            ->where('is_external', true)->count();
 
         // 4. Statistik Monthly Overview
         $currentMonth = Carbon::now()->month;
@@ -55,18 +62,46 @@ class PijarDashboardController extends Controller
 
         $monthlyPersentase = $monthlyTotal > 0 ? round(($monthlyTerlaksana / $monthlyTotal) * 100) : 0;
 
-        // 5. Data Dropdown untuk Modal
+        // 5. Grafik Revisi Pak Ridho: PIJAR vs SUAR (5 Tahun: 2026-2027 s.d. 2030-2031)
+        $daftarTahun = ['2026-2027', '2027-2028', '2028-2029', '2029-2030', '2030-2031'];
+        $chartPijar  = [];
+        $chartSuar   = [];
+
+        foreach ($daftarTahun as $th) {
+            $chartPijar[] = Schedule::where('tahun_ajaran', $th)->where('is_external', false)->count();
+            $chartSuar[]  = Schedule::where('tahun_ajaran', $th)->where('is_external', true)->count();
+        }
+
+        // 6. Grafik Revisi Pak Ridho: Perbandingan SUAR per Prodi (Terbanyak & Tersedikit)
+        $suarPerProdi = Course::leftJoin('schedules', function ($join) {
+                $join->on('courses.id', '=', 'schedules.course_id')
+                     ->where('schedules.is_external', '=', true);
+            })
+            ->select('courses.prodi', DB::raw('COUNT(schedules.id) as total_suar'))
+            ->groupBy('courses.prodi')
+            ->orderByDesc('total_suar')
+            ->get();
+
+        $prodiLabels = $suarPerProdi->pluck('prodi')->toArray();
+        $prodiCounts = $suarPerProdi->pluck('total_suar')->toArray();
+
+        // 7. Pemantauan Unggahan Dokumen Dosen/Praktisi (Sudah vs Belum Unggah RPS/Modul)
+        $jadwalDisetujuiList = Schedule::with('course')->where('status', 'approved')->get();
+        $sudahUnggah = $jadwalDisetujuiList->filter(fn($s) => !empty($s->dokumen_rps) || !empty($s->dokumen_bahan_ajar) || !empty($s->link_modul_ajar));
+        $belumUnggah = $jadwalDisetujuiList->filter(fn($s) => empty($s->dokumen_rps) && empty($s->dokumen_bahan_ajar) && empty($s->link_modul_ajar));
+
+        // 8. Data Dropdown untuk Modal
         $rooms   = Room::all();
         $courses = Course::all();
 
-        // 6. Query Tabel Aktivitas Pengajuan Terbaru
+        // 9. Query Tabel Aktivitas Pengajuan Terbaru
         $recentSchedules = Schedule::with(['course', 'room'])
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('dosen_pengajar', 'like', "%{$search}%")
                       ->orWhereHas('course', function ($courseQuery) use ($search) {
                           $courseQuery->where('nama_mk', 'like', "%{$search}%")
-                                       ->orWhere('kode_mk', 'like', "%{$search}%");
+                                      ->orWhere('kode_mk', 'like', "%{$search}%");
                       })
                       ->orWhereHas('room', function ($roomQuery) use ($search) {
                           $roomQuery->where('kode_ruang', 'like', "%{$search}%");
@@ -79,8 +114,10 @@ class PijarDashboardController extends Controller
         return view('pijar.dashboard', compact(
             'totalRuang', 'ruangTersedia', 'dosenAktif',
             'totalJadwal', 'menungguApprove', 'jadwalDisetujui', 'jadwalEksternal',
-            'weeklyTerlaksana', 'weeklyMenunggu', 'weeklyBatal',
+            'weeklyTerlaksana', 'weeklyMenunggu', 'weeklyBatal', 'weeklyPijar', 'weeklySuar',
             'monthlyTotal', 'monthlyTerlaksana', 'monthlyBelum', 'monthlyEksternal', 'monthlyPersentase',
+            'daftarTahun', 'chartPijar', 'chartSuar', 'prodiLabels', 'prodiCounts', 'suarPerProdi',
+            'sudahUnggah', 'belumUnggah',
             'rooms', 'courses', 'recentSchedules', 'search'
         ));
     }
@@ -88,8 +125,10 @@ class PijarDashboardController extends Controller
     // Halaman Manajemen Jadwal & Approval
     public function manajemenJadwal(Request $request)
     {
-        $search = $request->input('search');
-        $status = $request->input('status');
+        $search      = $request->input('search');
+        $status      = $request->input('status');
+        $tahunAjaran = $request->input('tahun_ajaran');
+        $semester    = $request->input('semester_jenis');
 
         $rooms   = Room::all();
         $courses = Course::all();
@@ -108,6 +147,8 @@ class PijarDashboardController extends Controller
                 });
             })
             ->when($status, fn($query, $status) => $query->where('status', $status))
+            ->when($tahunAjaran, fn($query, $tahunAjaran) => $query->where('tahun_ajaran', $tahunAjaran))
+            ->when($semester, fn($query, $semester) => $query->where('semester_jenis', $semester))
             ->orderByDesc('tanggal_pengajuan')
             ->paginate(10)
             ->withQueryString();
@@ -115,25 +156,11 @@ class PijarDashboardController extends Controller
         return view('pijar.manajemen-jadwal', compact(
             'schedules', 'rooms', 'courses',
             'totalJadwal', 'menungguApprove', 'jadwalDisetujui', 'jadwalRevisi',
-            'search', 'status'
+            'search', 'status', 'tahunAjaran', 'semester'
         ));
-
-        // Hitung kuota pertemuan praktisi per Prodi (Maks 28/tahun) & per MK (Maks 7/MK)
-        $kuotaProdi = Schedule::where('is_external', true)
-            ->whereIn('status', ['approved', 'pending_approval'])
-            ->with('course')
-            ->get()
-            ->groupBy(fn($s) => $s->course->prodi ?? 'Umum')
-            ->map(fn($g) => $g->count());
-
-        $kuotaMk = Schedule::where('is_external', true)
-            ->whereIn('status', ['approved', 'pending_approval'])
-            ->selectRaw('course_id, count(*) as total')
-            ->groupBy('course_id')
-            ->pluck('total', 'course_id');
     }
 
-    // Simpan Tambah Jadwal Cepat
+    // Simpan Tambah Jadwal Cepat (Dengan Logika Semester & Tahun Ajaran)
     public function store(Request $request)
     {
         $request->validate([
@@ -141,6 +168,9 @@ class PijarDashboardController extends Controller
             'room_id'            => 'required|exists:rooms,id',
             'dosen_pengajar'     => 'required|string|max:255',
             'peran_pengaju'      => 'required|string|max:100',
+            'tahun_ajaran'       => 'nullable|string|max:20',
+            'semester_jenis'     => 'nullable|in:Ganjil,Genap',
+            'semester_angka'     => 'nullable|integer|min:1|max:8',
             'status'             => 'required|in:pending_approval,approved,revision_requested,cancelled',
             'dokumen_bahan_ajar' => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx|max:10240',
         ]);
@@ -150,44 +180,96 @@ class PijarDashboardController extends Controller
             $filePath = $request->file('dokumen_bahan_ajar')->store('bahan_ajar_pijar', 'public');
         }
 
-        Schedule::create([
+        $isExternal = $request->has('is_external');
+
+        $schedule = Schedule::create([
             'course_id'          => $request->course_id,
             'room_id'            => $request->room_id,
             'submitted_by'       => Auth::id(),
             'dosen_pengajar'     => $request->dosen_pengajar,
             'peran_pengaju'      => $request->peran_pengaju,
+            'jenis_program'      => $isExternal ? 'SUAR' : 'PIJAR',
+            'tahun_ajaran'       => $request->tahun_ajaran ?? '2026-2027',
+            'semester_jenis'     => $request->semester_jenis ?? 'Ganjil',
+            'semester_angka'     => $request->semester_angka ?? 1,
             'dokumen_bahan_ajar' => $filePath,
             'tanggal_pengajuan'  => now(),
             'status'             => $request->status,
-            'is_external'        => $request->has('is_external'),
+            'is_external'        => $isExternal,
         ]);
 
-        return back()->with('success', 'Jadwal dan berkas bahan ajar berhasil disimpan ke database!');
+        if ($request->status === 'approved') {
+            $this->autoCreateLecturerAccount($schedule);
+        }
+
+        return back()->with('success', 'Jadwal semester dan berkas bahan ajar berhasil disimpan ke database!');
     }
 
-    // Update / Review Pengajuan Jadwal
-   public function update(Request $request, Schedule $schedule)
-{
-    $request->validate([
-        'room_id'               => 'required|exists:rooms,id',
-        'dosen_pengajar'        => 'required|string|max:255',
-        'status'                => 'required|in:pending_approval,approved,revision_requested,cancelled',
-        'catatan_admin'         => 'nullable|string',
-        'nomor_iks'             => 'nullable|string|max:100',
-        'status_presensi_pijar' => 'nullable|string|max:100',
-    ]);
+    // Update / Review Pengajuan Jadwal + Otomatis Buat Akun Email Kampus Dosen saat ACC
+    public function update(Request $request, Schedule $schedule)
+    {
+        $request->validate([
+            'room_id'               => 'required|exists:rooms,id',
+            'dosen_pengajar'        => 'required|string|max:255',
+            'status'                => 'required|in:pending_approval,approved,revision_requested,cancelled',
+            'alasan_penolakan'      => 'nullable|string',
+            'catatan_admin'         => 'nullable|string',
+            'nomor_iks'             => 'nullable|string|max:100',
+            'status_presensi_pijar' => 'nullable|string|max:100',
+            'dosen_email_kampus'    => 'nullable|email',
+        ]);
 
-    $schedule->update([
-        'room_id'               => $request->room_id,
-        'dosen_pengajar'        => $request->dosen_pengajar,
-        'status'                => $request->status,
-        'catatan_admin'         => $request->catatan_admin,
-        'nomor_iks'             => $request->nomor_iks ?? $schedule->nomor_iks,
-        'status_presensi_pijar' => $request->status_presensi_pijar ?? $schedule->status_presensi_pijar,
-    ]);
+        $schedule->update([
+            'room_id'               => $request->room_id,
+            'dosen_pengajar'        => $request->dosen_pengajar,
+            'status'                => $request->status,
+            'alasan_penolakan'      => $request->status === 'cancelled' ? $request->alasan_penolakan : null,
+            'catatan_admin'         => $request->catatan_admin,
+            'nomor_iks'             => $request->nomor_iks ?? $schedule->nomor_iks,
+            'status_presensi_pijar' => $request->status_presensi_pijar ?? $schedule->status_presensi_pijar,
+            'dosen_email_kampus'    => $request->dosen_email_kampus ?? $schedule->dosen_email_kampus,
+        ]);
 
-    return back()->with('success', 'Keputusan persetujuan & kelengkapan SOP PIJAR berhasil disimpan!');
-}
+        $pesanAkun = '';
+        if ($request->status === 'approved') {
+            $emailDibuat = $this->autoCreateLecturerAccount($schedule);
+            $pesanAkun = " Akun dosen aktif: {$emailDibuat} (Sandi awal: Pradita2026!).";
+        }
+
+        return back()->with('success', 'Keputusan persetujuan & kelengkapan SOP berhasil disimpan!' . $pesanAkun);
+    }
+
+    // Helper: Otomatis buat akun email kampus dosen/praktisi setelah ACC Admin
+    private function autoCreateLecturerAccount(Schedule $schedule): string
+    {
+        $namaPengajar = $schedule->praktisi_nama ?: $schedule->dosen_pengajar;
+        $slugNama     = trim(strtolower(preg_replace('/[^a-zA-Z0-9]+/', '.', trim($namaPengajar))), '.');
+        $emailKampus  = $schedule->dosen_email_kampus ?: ($slugNama . '@pradita.ac.id');
+
+        $schedule->update(['dosen_email_kampus' => $emailKampus]);
+
+        User::firstOrCreate(
+            ['email' => $emailKampus],
+            [
+                'name'                 => $namaPengajar,
+                'username'             => $slugNama,
+                'password'             => Hash::make('Pradita2026!'),
+                'role'                 => $schedule->is_external ? 'praktisi' : 'dosen',
+                'prodi'                => $schedule->course->prodi ?? null,
+                'is_active'            => true,
+                'must_change_password' => true,
+            ]
+        );
+
+        ActivityLog::create([
+            'user_id'        => Auth::id(),
+            'email_pengguna' => Auth::user()->email,
+            'aksi'           => 'ACC Jadwal & Buat Akun Pengajar',
+            'keterangan'     => "ACC {$schedule->course->nama_mk} dan aktivasi akun {$emailKampus} (wajib reset sandi awal).",
+        ]);
+
+        return $emailKampus;
+    }
 
     // Halaman Monitoring Jadwal Pihak Eksternal
     public function jadwalEksternal(Request $request)
@@ -235,26 +317,31 @@ class PijarDashboardController extends Controller
         ));
     }
 
-    // Update Status Pengajaran Eksternal dari Panel Kanan
+    // Update Status Pengajaran Eksternal + Pelaporan Pasca-Pelaksanaan (Link Google Drive Dokumentasi & Evaluasi)
     public function updateStatusEksternal(Request $request, Schedule $schedule)
-{
-    $request->validate([
-        'status_eksternal'      => 'required|in:ready_to_teach,ongoing,completed,pending',
-        'nomor_iks'             => 'nullable|string|max:100',
-        'status_presensi_pijar' => 'nullable|string|max:100',
-        'tautan_evaluasi'       => 'nullable|string|max:255',
-    ]);
+    {
+        $request->validate([
+            'status_eksternal'            => 'required|in:ready_to_teach,ongoing,completed,pending',
+            'nomor_iks'                   => 'nullable|string|max:100',
+            'status_presensi_pijar'       => 'nullable|string|max:100',
+            'tautan_evaluasi'             => 'nullable|string|max:255',
+            'link_gdrive_dokumentasi'     => 'nullable|url|max:255',
+            'jumlah_pertemuan_terlaksana' => 'nullable|integer|min:0|max:16',
+        ]);
 
-    $schedule->update([
-        'status_eksternal'      => $request->status_eksternal,
-        'nomor_iks'             => $request->nomor_iks ?? $schedule->nomor_iks,
-        'status_presensi_pijar' => $request->status_presensi_pijar ?? $schedule->status_presensi_pijar,
-        'tautan_evaluasi'       => $request->tautan_evaluasi ?? $schedule->tautan_evaluasi,
-        'status_bap'            => $request->status_eksternal === 'completed' ? 'Terverifikasi Presensi & Evaluasi PIJAR' : $schedule->status_bap,
-    ]);
+        $schedule->update([
+            'status_eksternal'            => $request->status_eksternal,
+            'nomor_iks'                   => $request->nomor_iks ?? $schedule->nomor_iks,
+            'status_presensi_pijar'       => $request->status_presensi_pijar ?? $schedule->status_presensi_pijar,
+            'tautan_evaluasi'             => $request->tautan_evaluasi ?? $schedule->tautan_evaluasi,
+            'link_gdrive_dokumentasi'     => $request->link_gdrive_dokumentasi ?? $schedule->link_gdrive_dokumentasi,
+            'jumlah_pertemuan_terlaksana' => $request->jumlah_pertemuan_terlaksana ?? $schedule->jumlah_pertemuan_terlaksana,
+            'status_pelaksanaan'          => $request->status_eksternal === 'completed' ? 'selesai' : ($request->status_eksternal === 'ongoing' ? 'berlangsung' : 'belum_mulai'),
+            'status_bap'                  => $request->status_eksternal === 'completed' ? 'Selesai Mengajar - Siap Pencairan Honor' : $schedule->status_bap,
+        ]);
 
-    return back()->with('success', 'Status pengajaran, IKS, & evaluasi PIJAR berhasil diperbarui!');
-}
+        return back()->with('success', 'Status pengajaran & pelaporan pasca-pelaksanaan berhasil diperbarui!');
+    }
 
     // Halaman Manajemen Akun Pengguna
     public function manajemenAkun(Request $request)
@@ -264,10 +351,9 @@ class PijarDashboardController extends Controller
         $status = $request->input('status');
         $prodi  = $request->input('prodi');
 
-        // 4 Kartu Metrik
         $totalPengguna = User::count();
         $totalKaprodi  = User::where('role', 'kaprodi')->count();
-        $totalSuar     = User::where('role', 'admin_suar')->count();
+        $totalSuar     = User::whereIn('role', ['admin', 'admin_suar', 'admin_pijar'])->count();
         $totalKerma    = User::where('role', 'admin_kerma')->count();
         $persenAktif   = $totalPengguna > 0 ? round((User::where('is_active', true)->count() / $totalPengguna) * 100) : 100;
 
@@ -303,33 +389,34 @@ class PijarDashboardController extends Controller
             'username' => 'nullable|string|max:100',
             'nip_nidn' => 'nullable|string|max:50',
             'email'    => 'required|email|unique:users,email',
-            'role'     => 'required|in:kaprodi,admin_suar,admin_kerma,admin_pijar',
+            'role'     => 'required|in:admin,kaprodi,dosen,praktisi,admin_suar,admin_kerma,admin_pijar',
             'prodi'    => 'nullable|string|max:255',
             'password' => 'required|string|min:6',
         ]);
 
         User::create([
-            'name'      => $request->name,
-            'username'  => $request->username ?: explode('@', $request->email)[0],
-            'nip_nidn'  => $request->nip_nidn,
-            'email'     => $request->email,
-            'role'      => $request->role,
-            'prodi'     => $request->prodi,
-            'password'  => Hash::make($request->password),
-            'is_active' => true,
+            'name'                 => $request->name,
+            'username'             => $request->username ?: explode('@', $request->email)[0],
+            'nip_nidn'             => $request->nip_nidn,
+            'email'                => $request->email,
+            'role'                 => $request->role,
+            'prodi'                => $request->prodi,
+            'password'             => Hash::make($request->password),
+            'is_active'            => true,
+            'must_change_password' => in_array($request->role, ['dosen', 'praktisi']),
         ]);
 
         return back()->with('success', 'Akun pengguna baru berhasil didaftarkan ke sistem!');
     }
 
-    // Update Akun Pengguna (Role, Prodi, Status Aktif, atau Reset Password)
+    // Update Akun Pengguna
     public function updateUser(Request $request, User $user)
     {
         $request->validate([
             'name'      => 'required|string|max:255',
             'username'  => 'nullable|string|max:100',
             'nip_nidn'  => 'nullable|string|max:50',
-            'role'      => 'required|in:kaprodi,admin_suar,admin_kerma,admin_pijar',
+            'role'      => 'required|in:admin,kaprodi,dosen,praktisi,admin_suar,admin_kerma,admin_pijar',
             'prodi'     => 'nullable|string|max:255',
             'is_active' => 'required|boolean',
             'password'  => 'nullable|string|min:6',
@@ -356,66 +443,60 @@ class PijarDashboardController extends Controller
     // Halaman Rekapitulasi Pengajaran Pihak Eksternal
     public function rekapPengajaran(Request $request)
     {
-        $bulan   =$request->input('bulan');
-        $tahun   =$request->input('tahun', date('Y'));
-        $prodi   =$request->input('prodi');
-        $pengajar =$request->input('pengajar');
-        $mitra   =$request->input('mitra');
-        $search  =$request->input('search');
+        $bulan    = $request->input('bulan');
+        $tahun    = $request->input('tahun', date('Y'));
+        $prodi    = $request->input('prodi');
+        $pengajar = $request->input('pengajar');
+        $mitra    = $request->input('mitra');
+        $search   = $request->input('search');
 
-        // Base Query: Jadwal Eksternal yang sudah terlaksana / disetujui
         $completedQuery = Schedule::with(['course', 'room'])
             ->where('is_external', true)
             ->where('status_eksternal', 'completed');
 
-        // Terapkan filter jika ada
         $filteredQuery = (clone$completedQuery)
             ->when($bulan, fn($q,$bulan) => $q->whereMonth('tanggal_pengajuan',$bulan))
             ->when($tahun, fn($q,$tahun) => $q->whereYear('tanggal_pengajuan',$tahun))
             ->when($prodi, fn($q,$prodi) => $q->whereHas('course', fn($cq) => $cq->where('prodi',$prodi)))
-            ->when($pengajar, fn($q,$pengajar) => $q->where('dosen_pengajar', 'like', "\%{$pengajar}%"))
-            ->when($mitra, fn($q,$mitra) => $q->where('mitra_instansi', 'like', "\%{$mitra}%"))
+            ->when($pengajar, fn($q,$pengajar) => $q->where('dosen_pengajar', 'like', "%{$pengajar}%"))
+            ->when($mitra, fn($q,$mitra) => $q->where('mitra_instansi', 'like', "%{$mitra}%"))
             ->when($search, function ($q, $search) {$q->where(function ($sub) use ($search) {
-                    $sub->where('dosen_pengajar', 'like', "\%{$search}%")
+                    $sub->where('dosen_pengajar', 'like', "%{$search}%")
                         ->orWhere('mitra_instansi', 'like', "%{$search}%")
-                        ->orWhereHas('course', fn($cq) =>$cq->where('nama_mk', 'like', "%{$search}\%")->orWhere('kode_mk', 'like', "\%{$search}%"));
+                        ->orWhereHas('course', fn($cq) =>$cq->where('nama_mk', 'like', "%{$search}%")->orWhere('kode_mk', 'like', "%{$search}%"));
                 });
             });
 
-        // 1. 4 Kartu Metrik Utama
-        $allFiltered     = (clone$filteredQuery)->get();
-        $totalSesi       =$allFiltered->count();
-        $totalPraktisi   =$allFiltered->unique('dosen_pengajar')->count();
-        $totalMitra      =$allFiltered->whereNotNull('mitra_instansi')->unique('mitra_instansi')->count();
-        $totalProdi      =$allFiltered->pluck('course.prodi')->unique()->count();
-        $totalJam        =$allFiltered->sum(fn($item) =>$item->course->sks ?? 3);
-        $rataRataJam     =$totalSesi > 0 ? round($totalJam / $totalSesi, 1) : 3;
+        $allFiltered   = (clone$filteredQuery)->get();
+        $totalSesi     =$allFiltered->count();
+        $totalPraktisi =$allFiltered->unique('dosen_pengajar')->count();
+        $totalMitra    =$allFiltered->whereNotNull('mitra_instansi')->unique('mitra_instansi')->count();
+        $totalProdi    =$allFiltered->pluck('course.prodi')->unique()->count();
+        $totalJam      =$allFiltered->sum(fn($item) =>$item->course->sks ?? 3);
+        $rataRataJam   =$totalSesi > 0 ? round($totalJam / $totalSesi, 1) : 3;
 
-        // 2. Analitik Visual 1: Distribusi per Minggu (Minggu 1 - 4)
         $minggu = [
-            1 => $allFiltered->filter(fn($i) => $i->tanggal_pengajuan->day <= 7)->count(), 2 =>$allFiltered->filter(fn($i) =>$i->tanggal_pengajuan->day >= 8 && $i->tanggal_pengajuan->day <= 14)->count(), 3 =>$allFiltered->filter(fn($i) =>$i->tanggal_pengajuan->day >= 15 && $i->tanggal_pengajuan->day <= 21)->count(), 4 =>$allFiltered->filter(fn($i) =>$i->tanggal_pengajuan->day >= 22)->count(),
+            1 => $allFiltered->filter(fn($i) => $i->tanggal_pengajuan->day <= 7)->count(),
+            2 =>$allFiltered->filter(fn($i) =>$i->tanggal_pengajuan->day >= 8 && $i->tanggal_pengajuan->day <= 14)->count(),
+            3 =>$allFiltered->filter(fn($i) =>$i->tanggal_pengajuan->day >= 15 && $i->tanggal_pengajuan->day <= 21)->count(),
+            4 =>$allFiltered->filter(fn($i) =>$i->tanggal_pengajuan->day >= 22)->count(),
         ];
         $maxMingguVal = max(1, max($minggu));$puncakMinggu = array_keys($minggu, max($minggu))[0] ?? 1;
         $persenPuncak =$totalSesi > 0 ? round((max($minggu) /$totalSesi) * 100, 1) : 0;
 
-        // 3. Analitik Visual 2: Top 5 Program Studi
         $topProdi =$allFiltered->groupBy(fn($i) =>$i->course->prodi ?? 'Umum')
             ->map(fn($group) =>$group->count())
             ->sortDesc()
             ->take(5);
         $maxProdiVal = max(1,$topProdi->max() ?? 1);
 
-        // 4. Analitik Visual 3: Top 5 Mitra Instansi Terbanyak
         $topMitra =$allFiltered->whereNotNull('mitra_instansi')
             ->groupBy('mitra_instansi')
             ->map(fn($group) =>$group->count())
             ->sortDesc()
             ->take(5);
 
-        // Dropdown Filter
         $listProdi = Course::distinct()->pluck('prodi');
-
-        // Tabel Audit Pengajaran Terlaksana (Pagination)
         $auditSchedules =$filteredQuery->orderByDesc('tanggal_pengajuan')->paginate(10)->withQueryString();
 
         return view('pijar.rekap-pengajaran', compact(
@@ -443,16 +524,18 @@ class PijarDashboardController extends Controller
         ];
 
         $callback = function () use ($schedules) {$file = fopen('php://output', 'w');
-            fputcsv($file, ['No', 'Kode MK', 'Nama Mata Kuliah', 'Program Studi', 'Pengajar Eksternal', 'Instansi Mitra', 'Tanggal Sesi', 'Waktu', 'Durasi (SKS/Jam)', 'Status']);
+            fputcsv($file, ['No', 'Tahun Ajaran', 'Semester', 'Kode MK', 'Nama Mata Kuliah', 'Program Studi', 'Pengajar Eksternal', 'Instansi Mitra', 'Pertemuan Terlaksana', 'Link Dokumentasi Google Drive', 'Status']);
 
             foreach ($schedules as $idx =>$item) {
                 fputcsv($file, [
-                    $idx + 1,$item->course->kode_mk ?? '-',
+                    $idx + 1,$item->tahun_ajaran ?? '2026-2027',
+                    ($item->semester_jenis ?? 'Ganjil') . ' (Sem. ' . ($item->semester_angka ?? 1) . ')',
+                    $item->course->kode_mk ?? '-',
                     $item->course->nama_mk ?? '-',
                     $item->course->prodi ?? '-',
                     $item->dosen_pengajar,$item->mitra_instansi ?? '-',
-                    $item->hari_sesi,$item->waktu_sesi,
-                    ($item->course->sks ?? 3) . ' Jam',
+                    ($item->jumlah_pertemuan_terlaksana ?? 0) . ' Pertemuan',
+                    $item->link_gdrive_dokumentasi ?? '-',
                     'Completed',
                 ]);
             }
@@ -460,5 +543,170 @@ class PijarDashboardController extends Controller
         };
 
         return response()->stream($callback, 200,$headers);
+    }
+
+    public function storeRoom(Request $request)
+{
+    $request->validate([
+        'kode_ruang' => 'required|string|max:50',
+        'nama_ruang' => 'required|string|max:150',
+        'kapasitas'  => 'required|integer|min:1',
+    ]);
+
+    Room::create([
+        'kode_ruang'   => $request->kode_ruang,
+        'nama_ruang'   => $request->nama_ruang,
+        'kapasitas'    => $request->kapasitas,
+        'is_available' => true,
+    ]);
+
+    return back()->with('success', 'Data Master Ruangan baru berhasil ditambahkan!');
+}
+
+public function storeCourse(Request $request)
+{
+    $request->validate([
+        'kode_mk'  => 'required|string|max:50',
+        'nama_mk'  => 'required|string|max:200',
+        'prodi'    => 'required|string|max:150',
+        'sks'      => 'required|integer|min:1|max:6',
+        'semester' => 'required|integer|min:1|max:8',
+    ]);
+
+    Course::create([
+        'kode_mk'  => $request->kode_mk,
+        'nama_mk'  => $request->nama_mk,
+        'prodi'    => $request->prodi,
+        'sks'      => $request->sks,
+        'semester' => $request->semester,
+    ]);
+
+    return back()->with('success', 'Data Master Mata Kuliah baru berhasil ditambahkan!');
+}
+
+// Unduh Template Excel/CSV untuk Dosen, Kaprodi, & Peran
+    public function downloadTemplateUsers()
+    {
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="Template_Impor_Dosen_dan_Peran.csv"',
+        ];
+
+        $callback = function () {
+            $file = fopen('php://output', 'w');
+            // BOM UTF-8 agar otomatis rapi saat dibuka di Microsoft Excel
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fputcsv($file, ['nama_lengkap', 'email_kampus', 'nidn_nip', 'role', 'prodi', 'password_awal']);
+            fputcsv($file, ['Dr. Budi Santoso, M.Kom.', 'budi.santoso@pradita.ac.id', '0412088101', 'dosen', 'Business Information System', 'Pradita2026!']);
+            fputcsv($file, ['Rina Marlina, S.T., M.T.', 'rina.marlina@pradita.ac.id', '0412088102', 'kaprodi', 'Informatics', 'Pradita2026!']);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    // Proses Impor Excel/CSV Akun Dosen, Kaprodi, & Peran
+    public function importUsersCsv(Request $request)
+    {
+        $request->validate([
+            'file_csv' => 'required|file|mimes:csv,txt|max:5120',
+        ]);
+
+        $path   = $request->file('file_csv')->getRealPath();
+        $lines  = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $berhasil = 0;
+
+        foreach ($lines as $idx => $line) {
+            if ($idx === 0) continue; // Lewati baris header
+
+            // Hilangkan BOM jika ada & dukung pemisah koma (,) atau titik koma (;) dari Excel
+            $line = preg_replace('/^\xEF\xBB\xBF/', '', $line);
+            $delimiter = str_contains($line, ';') ? ';' : ',';
+            $row = str_getcsv($line, $delimiter);
+
+            $nama  = trim($row[0] ?? '');
+            $email = trim($row[1] ?? '');
+            if (!$nama || !$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) continue;
+
+            $nip      = trim($row[2] ?? '');
+            $roleRaw  = strtolower(trim($row[3] ?? 'dosen'));
+            $role     = in_array($roleRaw, ['admin', 'kaprodi', 'dosen', 'praktisi', 'admin_kerma', 'admin_pijar', 'admin_suar']) ? $roleRaw : 'dosen';
+            $prodi    = trim($row[4] ?? '');
+            $passAwal = trim($row[5] ?? '') ?: 'Pradita2026!';
+
+            User::updateOrCreate(
+                ['email' => $email],
+                [
+                    'name'                 => $nama,
+                    'username'             => explode('@', $email)[0],
+                    'nip_nidn'             => $nip ?: null,
+                    'role'                 => $role,
+                    'prodi'                => $prodi ?: null,
+                    'password'             => Hash::make($passAwal),
+                    'is_active'            => true,
+                    'must_change_password' => in_array($role, ['dosen', 'praktisi']),
+                ]
+            );
+            $berhasil++;
+        }
+
+        return back()->with('success', "Berhasil mengimpor {$berhasil} data akun Dosen / Peran dari file Excel/CSV!");
+    }
+
+    // Unduh Template Excel/CSV untuk Master Mata Kuliah
+    public function downloadTemplateCourses()
+    {
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="Template_Impor_Mata_Kuliah.csv"',
+        ];
+
+        $callback = function () {
+            $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fputcsv($file, ['kode_mk', 'nama_mk', 'prodi', 'sks', 'semester']);
+            fputcsv($file, ['IS4012', 'Arsitektur Enterprise', 'Business Information System', '3', '5']);
+            fputcsv($file, ['IF3021', 'Rekayasa Perangkat Lunak', 'Informatics', '3', '4']);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    // Proses Impor Excel/CSV Master Mata Kuliah
+    public function importCoursesCsv(Request $request)
+    {
+        $request->validate([
+            'file_csv' => 'required|file|mimes:csv,txt|max:5120',
+        ]);
+
+        $path   = $request->file('file_csv')->getRealPath();
+        $lines  = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $berhasil = 0;
+
+        foreach ($lines as $idx => $line) {
+            if ($idx === 0) continue;
+
+            $line = preg_replace('/^\xEF\xBB\xBF/', '', $line);
+            $delimiter = str_contains($line, ';') ? ';' : ',';
+            $row = str_getcsv($line, $delimiter);
+
+            $kodeMk = trim($row[0] ?? '');
+            $namaMk = trim($row[1] ?? '');
+            if (!$kodeMk || !$namaMk) continue;
+
+            Course::updateOrCreate(
+                ['kode_mk' => $kodeMk],
+                [
+                    'nama_mk'  => $namaMk,
+                    'prodi'    => trim($row[2] ?? 'Business Information System'),
+                    'sks'      => (int) ($row[3] ?? 3),
+                    'semester' => (int) ($row[4] ?? 1),
+                ]
+            );
+            $berhasil++;
+        }
+
+        return back()->with('success', "Berhasil mengimpor {$berhasil} data Master Mata Kuliah dari file Excel/CSV!");
     }
 }

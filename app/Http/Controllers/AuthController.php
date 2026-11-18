@@ -28,14 +28,18 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
-            $role = Auth::user()->role;
+            $user = Auth::user();
 
-            return match ($role) {
-                'kaprodi'     => redirect()->intended('/kaprodi/dashboard'),
-                'admin_suar'  => redirect()->intended('/suar/dashboard'),
-                'admin_pijar' => redirect()->intended('/pijar/dashboard'),
-                'admin_kerma' => redirect()->intended('/kerma/dashboard'),
-                default       => redirect()->intended('/dashboard'),
+            // Jika dosen/praktisi baru pertama kali login menggunakan sandi awal, wajib reset kata sandi
+            if ($user->must_change_password) {
+                return redirect()->route('password.force_change');
+            }
+
+            return match ($user->role) {
+                'admin', 'admin_pijar', 'admin_suar' => redirect()->intended('/pijar/dashboard'),
+                'kaprodi'                            => redirect()->intended('/kaprodi/dashboard'),
+                'dosen', 'praktisi'                  => redirect()->intended('/dosen/dashboard'),
+                default                              => redirect()->intended('/dashboard'),
             };
         }
 

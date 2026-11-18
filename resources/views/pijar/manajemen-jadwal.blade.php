@@ -357,13 +357,50 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                        <label class="block font-bold text-gray-600 mb-1">Penyesuaian Ruang:</label>
-                        <select name="room_id" id="input_room_id" class="w-full border border-gray-300 rounded-xl px-3 py-2 font-semibold">
-                            @foreach($rooms as $room)
-                                <option value="{{ $room->id }}">{{ $room->kode_ruang }} ({{ $room->kapasitas }} Kursi)</option>
-                            @endforeach
-                        </select>
+    <div class="flex items-center justify-between mb-1">
+        <label class="block font-bold">Ruang Kelas</label>
+        <button 
+            type="button" 
+            onclick="toggleQuickAddRoom()" 
+            class="text-[11px] font-extrabold text-[#F57C00] hover:underline cursor-pointer"
+        >
+            + Tambah Ruang Baru
+        </button>
+    </div>
+
+    <select name="room_id" id="select_room_id" required class="w-full border border-gray-300 rounded-xl px-3 py-2 bg-gray-50">
+        @foreach($rooms as $r)
+            <option value="{{ $r->id }}">{{ $r->kode_ruang }} - {{ $r->nama_ruang }} (Kapasitas {{ $r->kapasitas }})</option>
+        @endforeach
+    </select>
+
+    {{-- PANEL INPUT TAMBAH RUANG CEPAT (INLINE) --}}
+    <div id="quickAddRoomBox" class="hidden mt-2.5 p-3 rounded-xl bg-[#FAFCEB] border border-[#0A4D29]/25 space-y-2.5">
+        <div class="flex justify-between items-center">
+            <span class="text-[11px] font-extrabold text-[#0A4D29]">Tambah Data Ruang Kelas Baru</span>
+            <button type="button" onclick="toggleQuickAddRoom()" class="text-xs text-gray-400 hover:text-gray-700 font-bold cursor-pointer">✕</button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input type="text" id="new_kode_ruang" placeholder="Kode (cth: R-402)" class="border border-gray-300 rounded-lg px-2.5 py-1.5 bg-white text-xs">
+            <input type="text" id="new_nama_ruang" placeholder="Nama (cth: Lab Komputer 2)" class="border border-gray-300 rounded-lg px-2.5 py-1.5 bg-white text-xs">
+            <input type="number" id="new_kapasitas_ruang" value="40" min="1" placeholder="Kapasitas" class="border border-gray-300 rounded-lg px-2.5 py-1.5 bg-white text-xs">
+        </div>
+
+        <p id="quickRoomError" class="hidden text-[11px] text-red-600 font-bold"></p>
+
+        <div class="flex justify-end">
+            <button 
+                type="button" 
+                onclick="submitQuickRoom()" 
+                id="btnSaveQuickRoom"
+                class="px-3.5 py-1.5 rounded-lg bg-[#0A4D29] hover:bg-[#083b1f] text-white font-bold text-[11px] cursor-pointer"
+            >
+                ✓ Simpan & Pilih Ruang Ini
+                        </button>
                     </div>
+                </div>
+            </div>
                     <div>
                         <label class="block font-bold text-gray-600 mb-1">Email Kampus Pengajar (Otomatis aktifkan akun saat ACC):</label>
                         <input type="email" name="dosen_email_kampus" id="input_email_kampus" placeholder="Kosongkan untuk generate otomatis (@pradita.ac.id)" class="w-full border border-gray-300 rounded-xl px-3 py-2">

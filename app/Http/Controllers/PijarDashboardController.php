@@ -548,19 +548,29 @@ class PijarDashboardController extends Controller
     public function storeRoom(Request $request)
 {
     $request->validate([
-        'kode_ruang' => 'required|string|max:50',
+        'kode_ruang' => 'required|string|max:50|unique:rooms,kode_ruang',
         'nama_ruang' => 'required|string|max:150',
-        'kapasitas'  => 'required|integer|min:1',
+        'kapasitas'  => 'required|integer|min:1|max:500',
+    ], [
+        'kode_ruang.unique' => 'Kode ruang tersebut sudah terdaftar.',
     ]);
 
-    Room::create([
-        'kode_ruang'   => $request->kode_ruang,
-        'nama_ruang'   => $request->nama_ruang,
+    $room = Room::create([
+        'kode_ruang'   => strtoupper(trim($request->kode_ruang)),
+        'nama_ruang'   => trim($request->nama_ruang),
         'kapasitas'    => $request->kapasitas,
         'is_available' => true,
     ]);
 
-    return back()->with('success', 'Data Master Ruangan baru berhasil ditambahkan!');
+    if ($request->expectsJson()) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Ruang kelas berhasil ditambahkan!',
+            'room'    => $room,
+        ]);
+    }
+
+    return back()->with('success', "Ruang {$room->kode_ruang} - {$room->nama_ruang} berhasil ditambahkan!");
 }
 
 public function storeCourse(Request $request)

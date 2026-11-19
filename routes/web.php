@@ -76,4 +76,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/suar/praktisi', [SuarDashboardController::class, 'storePractitioner'])->name('suar.praktisi.store');
     Route::put('/suar/praktisi/{practitioner}', [SuarDashboardController::class, 'updatePractitioner'])->name('suar.praktisi.update');
     Route::delete('/suar/praktisi/{practitioner}', [SuarDashboardController::class, 'destroyPractitioner'])->name('suar.praktisi.destroy');
+
+    Route::get('/logout', function (\Illuminate\Http\Request $request) {
+    \Illuminate\Support\Facades\Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect('/login');
+});
 });

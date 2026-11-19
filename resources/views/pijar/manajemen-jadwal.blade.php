@@ -82,7 +82,7 @@
                         </div>
                     </div>
 
-                    {{-- Filter Tahun Ajaran & Semester (Revisi Pak Ridho) --}}
+                    {{-- Filter Tahun Ajaran & Semester --}}
                     <form action="{{ route('pijar.manajemen-jadwal') }}" method="GET" class="flex flex-wrap items-center gap-2.5 pt-4 pb-3 border-b border-gray-100 text-xs">
                         <input type="hidden" name="status" value="{{ $status }}">
                         <input type="hidden" name="search" value="{{ $search }}">
@@ -134,10 +134,13 @@
                             </thead>
                             <tbody class="divide-y divide-gray-200 text-xs">
                                 @forelse ($schedules as $item)
+                                    @php
+                                        $reqId = 'REQ-' . ($item->tanggal_pengajuan ? $item->tanggal_pengajuan->format('Ymd') : date('Ymd')) . '-' . str_pad($item->id, 3, '0', STR_PAD_LEFT);
+                                    @endphp
                                     <tr class="hover:bg-gray-50 transition">
                                         <td class="py-4 px-4">
                                             <div class="flex items-center gap-1.5 mb-0.5">
-                                                <span class="text-[10px] font-mono font-bold text-gray-400">REQ-{{ $item->tanggal_pengajuan->format('Ymd') }}-{{ str_pad($item->id, 3, '0', STR_PAD_LEFT) }}</span>
+                                                <span class="text-[10px] font-mono font-bold text-gray-400">{{ $reqId }}</span>
                                                 @if($item->is_external || $item->jenis_program === 'SUAR')
                                                     <span class="bg-[#FFF0E0] text-[#F57C00] text-[9px] font-extrabold px-1.5 py-0.5 rounded">SUAR</span>
                                                 @else
@@ -152,7 +155,7 @@
                                         </td>
                                         <td class="py-4 px-4">
                                             <p class="font-bold text-gray-900 whitespace-pre-line">{{ $item->praktisi_nama ?: $item->dosen_pengajar }}</p>
-                                            <p class="text-[11px] text-gray-500 mt-0.5">Pengaju: {{ $item->peran_pengaju }}</p>
+                                            <p class="text-[11px] text-gray-500 mt-0.5">Pengaju: {{ $item->peran_pengaju ?? 'Kaprodi' }}</p>
                                             @if($item->dosen_email_kampus)
                                                 <p class="text-[10px] text-[#0A4D29] font-semibold mt-0.5">✉️ {{ $item->dosen_email_kampus }}</p>
                                             @endif
@@ -165,7 +168,7 @@
                                             </span>
                                         </td>
                                         <td class="py-4 px-4 text-center">
-                                            @if ($item->status === 'pending_approval')
+                                            @if ($item->status === 'pending_approval' || $item->status === 'pending')
                                                 <span class="inline-block bg-[#FFF0E0] text-[#F57C00] border border-[#F57C00]/30 font-bold px-3 py-1 rounded-full text-[11px]">
                                                     ● Menunggu Verifikasi
                                                 </span>
@@ -187,35 +190,35 @@
                                             @endif
                                         </td>
                                         <td class="py-4 px-4 text-center">
-                                            <button 
+                                            <button
                                                 type="button"
                                                 onclick="openApprovalModal(this)"
                                                 data-id="{{ $item->id }}"
-                                                data-reqid="REQ-{{ $item->tanggal_pengajuan->format('Ymd') }}-{{ str_pad($item->id, 3, '0', STR_PAD_LEFT) }}"
-                                                data-kodemk="{{ $item->course->kode_mk }}"
-                                                data-namamk="{{ $item->course->nama_mk }}"
-                                                data-prodi="{{ $item->course->prodi }}"
-                                                data-sks="{{ $item->course->sks }}"
+                                                data-reqid="{{ $reqId }}"
+                                                data-kodemk="{{ $item->course->kode_mk ?? '' }}"
+                                                data-namamk="{{ $item->course->nama_mk ?? '' }}"
+                                                data-prodi="{{ $item->course->prodi ?? '' }}"
+                                                data-sks="{{ $item->course->sks ?? 3 }}"
                                                 data-kelas="{{ $item->kelas ?? 'Kelas A' }}"
                                                 data-dosen="{{ $item->praktisi_nama ?: $item->dosen_pengajar }}"
-                                                data-email="{{ $item->dosen_email_kampus ?? '' }}"
-                                                data-pengaju="{{ $item->peran_pengaju }}"
-                                                data-waktuajuan="{{ $item->tanggal_pengajuan->translatedFormat('d F Y, H:i') }} WIB"
+                                                data-pengaju="{{ $item->peran_pengaju ?? 'Kaprodi' }}"
+                                                data-waktuajuan="{{ $item->tanggal_pengajuan ? $item->tanggal_pengajuan->translatedFormat('d F Y') : now()->translatedFormat('d F Y') }}"
                                                 data-tahunajaran="{{ $item->tahun_ajaran ?? '2026-2027' }}"
                                                 data-semesterjenis="{{ $item->semester_jenis ?? 'Ganjil' }}"
                                                 data-semesterangka="{{ $item->semester_angka ?? 1 }}"
                                                 data-roomid="{{ $item->room_id }}"
-                                                data-roomkode="{{ $item->room->kode_ruang }}"
-                                                data-roomkapasitas="{{ $item->room->kapasitas }}"
-                                                data-catatan="{{ $item->catatan_pengaju ?? 'Pengajuan jadwal perkuliahan sesuai kurikulum program studi.' }}"
+                                                data-roomkode="{{ $item->room->kode_ruang ?? '-' }}"
+                                                data-roomkapasitas="{{ $item->room->kapasitas ?? 40 }}"
+                                                data-pertemuanke="{{ $item->pertemuan_ke ?? 1 }}"
+                                                data-kuotamk="{{ $item->kuota_mk_terpakai ?? 0 }}"
+                                                data-kuotaprodi="{{ $item->kuota_prodi_terpakai ?? 0 }}"
+                                                data-email="{{ $item->dosen_email_kampus ?? ($item->dosen_email ?? '') }}"
                                                 data-alasan="{{ $item->alasan_penolakan ?? '' }}"
                                                 data-status="{{ $item->status }}"
-                                                data-pertemuanke="{{ $item->pertemuan_ke ?? 1 }}"
-                                                data-kuotamk="{{ $kuotaMk[$item->course_id] ?? 0 }}"
-                                                data-kuotaprodi="{{ $kuotaProdi[$item->course->prodi] ?? 0 }}"
                                                 data-dokumen="{{ $item->dokumen_bahan_ajar ? asset('storage/' . $item->dokumen_bahan_ajar) : '' }}"
-                                                class="bg-[#0A4D29] hover:bg-[#F57C00] text-white font-bold px-4 py-1.5 rounded-lg text-[11px] transition cursor-pointer shadow-xs">
-                                                Periksa & Putuskan
+                                                class="px-3.5 py-2 rounded-xl bg-[#0A4D29] hover:bg-[#083b1f] text-white font-bold text-[11px] cursor-pointer shadow-xs"
+                                            >
+                                                Periksa &amp; Putuskan
                                             </button>
                                         </td>
                                     </tr>
@@ -302,7 +305,7 @@
                 </div>
             </div>
 
-            {{-- Periode Semester & Alokasi Ruang (Revisi Pak Ridho: Semester & Tahun Ajaran) --}}
+            {{-- Periode Semester & Alokasi Ruang --}}
             <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 mt-4">
                 <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2.5">PERIODE SEMESTER & ALOKASI RUANG</p>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
@@ -357,50 +360,13 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-    <div class="flex items-center justify-between mb-1">
-        <label class="block font-bold">Ruang Kelas</label>
-        <button 
-            type="button" 
-            onclick="toggleQuickAddRoom()" 
-            class="text-[11px] font-extrabold text-[#F57C00] hover:underline cursor-pointer"
-        >
-            + Tambah Ruang Baru
-        </button>
-    </div>
-
-    <select name="room_id" id="select_room_id" required class="w-full border border-gray-300 rounded-xl px-3 py-2 bg-gray-50">
-        @foreach($rooms as $r)
-            <option value="{{ $r->id }}">{{ $r->kode_ruang }} - {{ $r->nama_ruang }} (Kapasitas {{ $r->kapasitas }})</option>
-        @endforeach
-    </select>
-
-    {{-- PANEL INPUT TAMBAH RUANG CEPAT (INLINE) --}}
-    <div id="quickAddRoomBox" class="hidden mt-2.5 p-3 rounded-xl bg-[#FAFCEB] border border-[#0A4D29]/25 space-y-2.5">
-        <div class="flex justify-between items-center">
-            <span class="text-[11px] font-extrabold text-[#0A4D29]">Tambah Data Ruang Kelas Baru</span>
-            <button type="button" onclick="toggleQuickAddRoom()" class="text-xs text-gray-400 hover:text-gray-700 font-bold cursor-pointer">✕</button>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <input type="text" id="new_kode_ruang" placeholder="Kode (cth: R-402)" class="border border-gray-300 rounded-lg px-2.5 py-1.5 bg-white text-xs">
-            <input type="text" id="new_nama_ruang" placeholder="Nama (cth: Lab Komputer 2)" class="border border-gray-300 rounded-lg px-2.5 py-1.5 bg-white text-xs">
-            <input type="number" id="new_kapasitas_ruang" value="40" min="1" placeholder="Kapasitas" class="border border-gray-300 rounded-lg px-2.5 py-1.5 bg-white text-xs">
-        </div>
-
-        <p id="quickRoomError" class="hidden text-[11px] text-red-600 font-bold"></p>
-
-        <div class="flex justify-end">
-            <button 
-                type="button" 
-                onclick="submitQuickRoom()" 
-                id="btnSaveQuickRoom"
-                class="px-3.5 py-1.5 rounded-lg bg-[#0A4D29] hover:bg-[#083b1f] text-white font-bold text-[11px] cursor-pointer"
-            >
-                ✓ Simpan & Pilih Ruang Ini
-                        </button>
+                        <label class="block font-bold text-gray-600 mb-1">Alokasi Ruang Kuliah:</label>
+                        <select name="room_id" id="input_room_id" class="w-full border border-gray-300 rounded-xl px-3 py-2 bg-gray-50">
+                            @foreach($rooms as $r)
+                                <option value="{{ $r->id }}">{{ $r->kode_ruang }} - {{ $r->nama_ruang }} (Kapasitas {{ $r->kapasitas }})</option>
+                            @endforeach
+                        </select>
                     </div>
-                </div>
-            </div>
                     <div>
                         <label class="block font-bold text-gray-600 mb-1">Email Kampus Pengajar (Otomatis aktifkan akun saat ACC):</label>
                         <input type="email" name="dosen_email_kampus" id="input_email_kampus" placeholder="Kosongkan untuk generate otomatis (@pradita.ac.id)" class="w-full border border-gray-300 rounded-xl px-3 py-2">
@@ -434,25 +400,61 @@
         </div>
     </div>
 
-    {{-- MODAL TAMBAH JADWAL SEMESTER (DENGAN LOGIKA SEMESTER & TAHUN AJARAN) --}}
-    <div id="modalTambah" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+    {{-- MODAL TAMBAH JADWAL SEMESTER (JURUSAN PRADITA -> MATA KULIAH TERFILTER + TAMBAH RUANG INLINE) --}}
+    <div id="modalTambah" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl my-8">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
                 <h3 class="text-lg font-extrabold text-[#0A4D29]">Tambah Jadwal Kuliah / Praktisi</h3>
                 <button type="button" onclick="document.getElementById('modalTambah').classList.add('hidden')" class="text-gray-400 hover:text-gray-700 font-bold cursor-pointer">✕</button>
             </div>
+
+            @php
+                $prodiPradita = collect([
+                    'Sistem Informasi',
+                    'Teknik Informatika',
+                    'Arsitektur',
+                    'Perencanaan Wilayah dan Kota',
+                    'Desain Komunikasi Visual',
+                    'Desain Interior',
+                    'Manajemen',
+                    'Akuntansi',
+                    'Pariwisata',
+                    'Seni Kuliner',
+                    'Manajemen Bisnis Retail',
+                    'Teknologi Pangan',
+                ])->merge($courses->pluck('prodi')->filter())->unique()->values();
+            @endphp
+
             <form action="{{ route('pijar.schedules.store') }}" method="POST" enctype="multipart/form-data" class="space-y-3 text-xs">
                 @csrf
+
+                {{-- Pilih Jurusan / Program Studi Pradita --}}
                 <div>
-                    <label class="block font-bold mb-1">Mata Kuliah</label>
-                    <select name="course_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                        @foreach($courses as $c)
-                            <option value="{{ $c->id }}">{{ $c->kode_mk }} - {{ $c->nama_mk }} ({{ $c->prodi }})</option>
+                    <label class="block font-bold mb-1">Program Studi / Jurusan (Universitas Pradita)</label>
+                    <select id="filter_prodi_modal" onchange="filterCoursesByProdi()" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 font-semibold text-gray-800">
+                        <option value="">-- Semua Program Studi Pradita --</option>
+                        @foreach($prodiPradita as $prodiName)
+                            <option value="{{ $prodiName }}">{{ $prodiName }}</option>
                         @endforeach
                     </select>
                 </div>
 
-                {{-- Pilihan Tahun Ajaran & Semester (Pengganti Waktu/Durasi) --}}
+                {{-- Mata Kuliah (Otomatis Tersaring Berdasarkan Jurusan di Atas) --}}
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block font-bold">Mata Kuliah</label>
+                        <span id="course_count_badge" class="text-[10px] font-bold text-[#0A4D29]">{{ $courses->count() }} MK tersedia</span>
+                    </div>
+                    <select name="course_id" id="select_course_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                        @foreach($courses as $c)
+                            <option value="{{ $c->id }}" data-prodi="{{ $c->prodi }}">
+                                {{ $c->kode_mk }} - {{ $c->nama_mk }} ({{ $c->prodi }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Pilihan Tahun Ajaran & Semester --}}
                 <div class="grid grid-cols-3 gap-2">
                     <div>
                         <label class="block font-bold mb-1">Tahun Ajaran</label>
@@ -479,13 +481,42 @@
                     </div>
                 </div>
 
+                {{-- Ruang Kelas + Tombol Cepat + Tambah Ruang Baru --}}
                 <div>
-                    <label class="block font-bold mb-1">Ruang Kelas</label>
-                    <select name="room_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block font-bold">Ruang Kelas</label>
+                        <button type="button" onclick="toggleQuickAddRoom()" class="text-[11px] font-extrabold text-[#F57C00] hover:underline cursor-pointer">
+                            + Tambah Ruang Baru
+                        </button>
+                    </div>
+
+                    <select name="room_id" id="select_room_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50">
                         @foreach($rooms as $r)
-                            <option value="{{ $r->id }}">{{ $r->kode_ruang }} (Kapasitas {{ $r->kapasitas }})</option>
+                            <option value="{{ $r->id }}">{{ $r->kode_ruang }} - {{ $r->nama_ruang }} (Kapasitas {{ $r->kapasitas }})</option>
                         @endforeach
                     </select>
+
+                    {{-- Panel Input Tambah Ruang Cepat (Inline) --}}
+                    <div id="quickAddRoomBox" class="hidden mt-2.5 p-3 rounded-xl bg-[#FAFCEB] border border-[#0A4D29]/25 space-y-2.5">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[11px] font-extrabold text-[#0A4D29]">Tambah Data Ruang Kelas Baru</span>
+                            <button type="button" onclick="toggleQuickAddRoom()" class="text-xs text-gray-400 hover:text-gray-700 font-bold cursor-pointer">✕</button>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <input type="text" id="new_kode_ruang" placeholder="Kode (cth: R-402)" class="border border-gray-300 rounded-lg px-2.5 py-1.5 bg-white text-xs">
+                            <input type="text" id="new_nama_ruang" placeholder="Nama (cth: Lab Komputer)" class="border border-gray-300 rounded-lg px-2.5 py-1.5 bg-white text-xs">
+                            <input type="number" id="new_kapasitas_ruang" value="40" min="1" placeholder="Kapasitas" class="border border-gray-300 rounded-lg px-2.5 py-1.5 bg-white text-xs">
+                        </div>
+
+                        <p id="quickRoomError" class="hidden text-[11px] text-red-600 font-bold"></p>
+
+                        <div class="flex justify-end">
+                            <button type="button" onclick="submitQuickRoom()" id="btnSaveQuickRoom" class="px-3.5 py-1.5 rounded-lg bg-[#0A4D29] hover:bg-[#083b1f] text-white font-bold text-[11px] cursor-pointer">
+                                ✓ Simpan & Pilih Ruang Ini
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div>
@@ -528,7 +559,7 @@
         </div>
     </div>
 
-    {{-- MODAL KUSTOMISASI DATA MASTER RUANGAN & MATA KULIAH (REVISI PAK RIDHO) --}}
+    {{-- MODAL KUSTOMISASI DATA MASTER RUANGAN & MATA KULIAH --}}
     <div id="modalMaster" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
@@ -540,7 +571,6 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-                {{-- Form Tambah Ruangan --}}
                 <form action="{{ route('pijar.master.room') }}" method="POST" class="space-y-3 bg-gray-50 p-4 rounded-xl border">
                     @csrf
                     <h4 class="font-extrabold text-sm text-gray-900">+ Tambah Ruang Kelas Baru</h4>
@@ -559,7 +589,6 @@
                     <button type="submit" class="w-full py-2 rounded-lg bg-[#0A4D29] text-white font-bold cursor-pointer">Simpan Ruangan</button>
                 </form>
 
-                {{-- Form Tambah Mata Kuliah --}}
                 <form action="{{ route('pijar.master.course') }}" method="POST" class="space-y-3 bg-gray-50 p-4 rounded-xl border">
                     @csrf
                     <h4 class="font-extrabold text-sm text-gray-900">+ Tambah Mata Kuliah Kurikulum</h4>
@@ -598,6 +627,43 @@
     </div>
 
     <script>
+        function filterCoursesByProdi() {
+            const selectedProdi = document.getElementById('filter_prodi_modal').value.toLowerCase();
+            const courseSelect = document.getElementById('select_course_id');
+            const badge = document.getElementById('course_count_badge');
+            const options = Array.from(courseSelect.options);
+
+            let visibleCount = 0;
+            let firstVisibleOption = null;
+
+            options.forEach(opt => {
+                const optProdi = (opt.dataset.prodi || '').toLowerCase();
+                const isMatch = !selectedProdi || optProdi === selectedProdi;
+
+                opt.hidden = !isMatch;
+                opt.disabled = !isMatch;
+
+                if (isMatch) {
+                    visibleCount++;
+                    if (!firstVisibleOption) {
+                        firstVisibleOption = opt;
+                    }
+                }
+            });
+
+            if (firstVisibleOption) {
+                courseSelect.value = firstVisibleOption.value;
+            } else {
+                courseSelect.value = '';
+            }
+
+            if (badge) {
+                badge.textContent = visibleCount > 0
+                    ? visibleCount + ' MK tersedia'
+                    : 'Belum ada MK di prodi ini (tambah di Master MK)';
+            }
+        }
+
         function openApprovalModal(btn) {
             const d = btn.dataset;
 
@@ -655,6 +721,78 @@
 
         function closeApprovalModal() {
             document.getElementById('modalApproval').classList.add('hidden');
+        }
+
+        function toggleQuickAddRoom() {
+            const box = document.getElementById('quickAddRoomBox');
+            const err = document.getElementById('quickRoomError');
+            err.classList.add('hidden');
+            box.classList.toggle('hidden');
+        }
+
+        async function submitQuickRoom() {
+            const kode = document.getElementById('new_kode_ruang').value.trim();
+            const nama = document.getElementById('new_nama_ruang').value.trim();
+            const kapasitas = document.getElementById('new_kapasitas_ruang').value;
+            const errEl = document.getElementById('quickRoomError');
+            const btn = document.getElementById('btnSaveQuickRoom');
+
+            if (!kode || !nama || !kapasitas) {
+                errEl.textContent = 'Kode ruang, nama ruang, dan kapasitas wajib diisi.';
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            errEl.classList.add('hidden');
+            btn.disabled = true;
+            btn.textContent = 'Menyimpan...';
+
+            try {
+                const res = await fetch("{{ route('pijar.master.room') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        kode_ruang: kode,
+                        nama_ruang: nama,
+                        kapasitas: parseInt(kapasitas, 10)
+                    })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    const firstErr = data.errors ? Object.values(data.errors)[0][0] : (data.message || 'Gagal menambah ruang.');
+                    errEl.textContent = firstErr;
+                    errEl.classList.remove('hidden');
+                } else {
+                    const label = `${data.room.kode_ruang} - ${data.room.nama_ruang} (Kapasitas ${data.room.kapasitas})`;
+                    ['select_room_id', 'input_room_id'].forEach(selId => {
+                        const select = document.getElementById(selId);
+                        if (select) {
+                            const option = document.createElement('option');
+                            option.value = data.room.id;
+                            option.textContent = label;
+                            if (selId === 'select_room_id') option.selected = true;
+                            select.appendChild(option);
+                        }
+                    });
+
+                    document.getElementById('new_kode_ruang').value = '';
+                    document.getElementById('new_nama_ruang').value = '';
+                    document.getElementById('new_kapasitas_ruang').value = '40';
+                    document.getElementById('quickAddRoomBox').classList.add('hidden');
+                }
+            } catch (e) {
+                errEl.textContent = 'Terjadi kesalahan koneksi saat menyimpan ruang.';
+                errEl.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '✓ Simpan & Pilih Ruang Ini';
+            }
         }
     </script>
 </body>

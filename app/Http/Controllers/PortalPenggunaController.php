@@ -41,7 +41,7 @@ class PortalPenggunaController extends Controller
     }
 
     // =========================================================
-    // 2. PORTAL KAPRODI (PENGAJUAN PRAKTISI & PANTAU STATUS ACC)
+    // 2. PORTAL KAPRODI (PENGAJUAN JADWAL & PRAKTISI PER JURUSAN)
     // =========================================================
     public function kaprodiDashboard(Request $request)
     {
@@ -51,14 +51,26 @@ class PortalPenggunaController extends Controller
             return redirect()->route('password.force');
         }
 
-        // Ambil master data Mata Kuliah & Dosen sesuai prodi Kaprodi (atau semua jika prodi kosong)
-        $courses = Course::when($user->prodi, fn($q) => $q->where('prodi', $user->prodi))
+        // Ambil Mata Kuliah HANYA milik jurusan Kaprodi yang sedang login
+        $prodiUser = trim((string) $user->prodi);
+
+        $courses = Course::when($prodiUser !== '', function ($q) use ($prodiUser) {
+                $q->where(function ($sub) use ($prodiUser) {
+                    $sub->where('prodi', $prodiUser)
+                        ->orWhere('prodi', 'like', '%' . $prodiUser . '%');
+
+                    // Padanan Inggris <-> Indonesia (Business Information System <-> Sistem Informasi)
+                    if (stripos($prodiUser, 'business information system') !== false || stripos($prodiUser, 'sistem informasi') !== false) {
+                        $sub->orWhere('prodi', 'Business Information System')
+                            ->orWhere('prodi', 'Sistem Informasi');
+                    }
+                });
+            })
+            ->orderBy('semester')
             ->orderBy('nama_mk')
             ->get();
 
-        if ($courses->isEmpty()) {
-            $courses = Course::orderBy('nama_mk')->get();
-        }
+        $rooms = Room::orderBy('kode_ruang')->get();
 
         $dosens = User::where('role', 'dosen')
             ->where('is_active', true)
@@ -66,25 +78,52 @@ class PortalPenggunaController extends Controller
             ->get();
 
         $schedules = Schedule::with(['course', 'room'])
-            ->when($user->prodi, function ($q) use ($user) {
-                $q->whereHas('course', fn($c) => $c->where('prodi', $user->prodi));
+            ->when($prodiUser !== '', function ($q) use ($prodiUser) {
+                $q->whereHas('course', function ($c) use ($prodiUser) {
+                    $c->where('prodi', $prodiUser)
+                      ->orWhere('prodi', 'like', '%' . $prodiUser . '%');
+
+                    if (stripos($prodiUser, 'business information system') !== false || stripos($prodiUser, 'sistem informasi') !== false) {
+                        $c->orWhere('prodi', 'Business Information System')
+                          ->orWhere('prodi', 'Sistem Informasi');
+                    }
+                });
             })
             ->latest()
             ->paginate(10);
 
-        return view('kaprodi.dashboard', compact('user', 'courses', 'dosens', 'schedules'));
+        return view('kaprodi.dashboard', compact('user', 'courses', 'rooms', 'dosens', 'schedules'));
     }
 
     public function kaprodiStorePengajuan(Request $request)
     {
+        $user = Auth::user();
+        $course = Course::findOrFail($request->course_id);
+
+        // Proteksi tambahan agar Kaprodi tidak bisa mengajukan MK di luar jurusannya
+        $prodiUser = trim((string) $user->prodi);
+        if ($prodiUser !== '') {
+            $isSameProdi = strcasecmp($course->prodi, $prodiUser) === 0
+                || stripos($course->prodi, $prodiUser) !== false
+                || (
+                    (stripos($prodiUser, 'business information system') !== false || stripos($prodiUser, 'sistem informasi') !== false)
+                    && (stripos($course->prodi, 'business information system') !== false || stripos($course->prodi, 'sistem informasi') !== false)
+                );
+
+            if (!$isSameProdi) {
+                return back()->withErrors(['course_id' => 'Mata kuliah tersebut bukan milik Program Studi ' . $prodiUser . '.']);
+            }
+        }
+
         $request->validate([
             'course_id'           => 'required|exists:courses,id',
+            'room_id'             => 'required|exists:rooms,id',
             'dosen_pengajar'      => 'required|string|max:200',
             'dosen_email'         => 'nullable|email|max:200',
-            'praktisi_nama'       => 'required|string|max:200',
-            'praktisi_email'      => 'required|email|max:200',
-            'mitra_instansi'      => 'required|string|max:200',
-            'jabatan_praktisi'    => 'required|string|max:200',
+            'praktisi_nama'       => 'nullable|string|max:200',
+            'praktisi_email'      => 'nullable|email|max:200',
+            'mitra_instansi'      => 'nullable|string|max:200',
+            'jabatan_praktisi'    => 'nullable|string|max:200',
             'tahun_ajaran'        => 'required|string|max:30',
             'semester_jenis'      => 'required|in:Ganjil,Genap',
             'semester_angka'      => 'required|integer|min:1|max:8',
@@ -92,23 +131,20 @@ class PortalPenggunaController extends Controller
             'dokumen_bahan_ajar'  => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,zip|max:10240',
         ]);
 
-        // Ambil ruangan default/placeholder sistem karena jadwal difokuskan ke Semester & Tahun Ajaran
-        $defaultRoom = Room::firstOrCreate(
-            ['kode_ruang' => 'SUAR-FLEX'],
-            ['nama_ruang' => 'Kelas Terjadwal Prodi (Fleksibel)', 'kapasitas' => 40, 'is_available' => true]
-        );
-
         $filePath = null;
         if ($request->hasFile('dokumen_bahan_ajar')) {
             $filePath = $request->file('dokumen_bahan_ajar')->store('rps_bahan_ajar', 'public');
         }
 
+        $isExternal = $request->boolean('is_external') || filled($request->praktisi_nama);
+
         Schedule::create([
             'course_id'          => $request->course_id,
-            'room_id'            => $defaultRoom->id,
-            'kelas'              => 'Kelas Reguler',
+            'room_id'            => $request->room_id,
+            'kelas'              => 'Kelas A',
             'dosen_pengajar'     => $request->dosen_pengajar,
             'dosen_email'        => $request->dosen_email,
+            'dosen_email_kampus' => $request->dosen_email,
             'praktisi_nama'      => $request->praktisi_nama,
             'praktisi_email'     => $request->praktisi_email,
             'mitra_instansi'     => $request->mitra_instansi,
@@ -118,13 +154,16 @@ class PortalPenggunaController extends Controller
             'semester_angka'     => $request->semester_angka,
             'hari_sesi'          => 'TA ' . $request->tahun_ajaran,
             'waktu_sesi'         => 'Semester ' . $request->semester_jenis,
-            'status'             => 'pending',
+            'peran_pengaju'      => 'Kaprodi ' . ($user->prodi ?? ''),
+            'jenis_program'      => $isExternal ? 'SUAR' : 'PIJAR',
+            'is_external'        => $isExternal,
+            'status'             => 'pending_approval',
             'status_eksternal'   => 'pending',
             'catatan_pengaju'    => $request->catatan_pengaju,
             'dokumen_bahan_ajar' => $filePath,
         ]);
 
-        return back()->with('success', 'Pengajuan Praktisi Mengajar berhasil dikirim ke Admin Pusat untuk diverifikasi!');
+        return back()->with('success', 'Pengajuan jadwal & praktisi untuk Prodi ' . ($user->prodi ?? '') . ' berhasil dikirim ke Admin Pusat!');
     }
 
     // =========================================================
@@ -141,6 +180,7 @@ class PortalPenggunaController extends Controller
         $schedules = Schedule::with(['course', 'room'])
             ->where(function ($q) use ($user) {
                 $q->where('dosen_email', $user->email)
+                  ->orWhere('dosen_email_kampus', $user->email)
                   ->orWhere('praktisi_email', $user->email)
                   ->orWhere('dosen_pengajar', 'like', '%' . $user->name . '%')
                   ->orWhere('praktisi_nama', 'like', '%' . $user->name . '%');

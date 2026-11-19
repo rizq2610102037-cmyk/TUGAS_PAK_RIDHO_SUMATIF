@@ -119,7 +119,12 @@ class PortalPenggunaController extends Controller
             'course_id'           => 'required|exists:courses,id',
             'room_id'             => 'required|exists:rooms,id',
             'dosen_pengajar'      => 'required|string|max:200',
-            'dosen_email'         => 'nullable|email|max:200',
+            'dosen_email'         => [
+                'required',
+                'email',
+                'max:200',
+                'regex:/^[a-zA-Z0-9._%+-]+@pradita\.ac\.id$/i',
+            ],
             'praktisi_nama'       => 'nullable|string|max:200',
             'praktisi_email'      => 'nullable|email|max:200',
             'mitra_instansi'      => 'nullable|string|max:200',
@@ -129,6 +134,9 @@ class PortalPenggunaController extends Controller
             'semester_angka'      => 'required|integer|min:1|max:8',
             'catatan_pengaju'     => 'nullable|string',
             'dokumen_bahan_ajar'  => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,zip|max:10240',
+        ], [
+            'dosen_email.required' => 'Email kampus dosen wajib diisi oleh Kaprodi saat pengajuan.',
+            'dosen_email.regex'    => 'Email dosen wajib menggunakan email kampus resmi (@pradita.ac.id).',
         ]);
 
         $filePath = null;
@@ -137,16 +145,18 @@ class PortalPenggunaController extends Controller
         }
 
         $isExternal = $request->boolean('is_external') || filled($request->praktisi_nama);
+        $emailKampusDosen = strtolower(trim($request->dosen_email));
 
         Schedule::create([
+            'submitted_by'       => $user->id,
+            'tanggal_pengajuan'  => now(),
             'course_id'          => $request->course_id,
             'room_id'            => $request->room_id,
             'kelas'              => 'Kelas A',
             'dosen_pengajar'     => $request->dosen_pengajar,
-            'dosen_email'        => $request->dosen_email,
-            'dosen_email_kampus' => $request->dosen_email,
+            'dosen_email_kampus' => $emailKampusDosen,
             'praktisi_nama'      => $request->praktisi_nama,
-            'praktisi_email'     => $request->praktisi_email,
+            'praktisi_email'     => $request->praktisi_email ? strtolower(trim($request->praktisi_email)) : null,
             'mitra_instansi'     => $request->mitra_instansi,
             'jabatan_praktisi'   => $request->jabatan_praktisi,
             'tahun_ajaran'       => $request->tahun_ajaran,
@@ -179,8 +189,7 @@ class PortalPenggunaController extends Controller
 
         $schedules = Schedule::with(['course', 'room'])
             ->where(function ($q) use ($user) {
-                $q->where('dosen_email', $user->email)
-                  ->orWhere('dosen_email_kampus', $user->email)
+                $q->where('dosen_email_kampus', $user->email)
                   ->orWhere('praktisi_email', $user->email)
                   ->orWhere('dosen_pengajar', 'like', '%' . $user->name . '%')
                   ->orWhere('praktisi_nama', 'like', '%' . $user->name . '%');

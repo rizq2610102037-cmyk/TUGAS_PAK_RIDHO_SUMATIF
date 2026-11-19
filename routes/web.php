@@ -82,5 +82,9 @@ Route::middleware('auth')->group(function () {
     $request->session()->invalidate();
     $request->session()->regenerateToken();
     return redirect('/login');
+
+    Route::get('/kaprodi/pengajuan', function () {
+    return redirect()->route('kaprodi.dashboard');
+});
 });
 });

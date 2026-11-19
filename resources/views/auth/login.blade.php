@@ -78,7 +78,7 @@
                 </div>
 
                 <div class="text-center pt-2">
-                    <a href="#" class="text-white text-xs hover:underline">Forget password?</a>
+                    <a href="ganti-sandi-awal.blade.php" class="text-white text-xs hover:underline">Forget password?</a>
                 </div>
             </form>
         </div>

@@ -7,21 +7,44 @@ use Illuminate\Database\Eloquent\Model;
 class Schedule extends Model
 {
     protected $fillable = [
-    'course_id', 'room_id', 'submitted_by', 'dosen_pengajar',
-    'praktisi_nama', 'mitra_instansi', 'jabatan_praktisi', 'peran_pengaju',
-    'kelas', 'pertemuan_ke', 'hari_sesi', 'waktu_sesi',
-    'catatan_pengaju', 'catatan_admin', 'dokumen_bahan_ajar',
-    'nomor_iks', 'status_presensi_pijar', 'tautan_evaluasi',
-    'tanggal_pengajuan', 'status', 'status_eksternal',
-    'status_honorarium', 'status_bap', 'pic_akademik', 'pic_kontak',
-    'tautan_zoom', 'is_external',
-];
+        'submitted_by',
+        'tanggal_pengajuan',
+        'course_id',
+        'room_id',
+        'kelas',
+        'dosen_pengajar',
+        'dosen_email_kampus',
+        'praktisi_nama',
+        'praktisi_email',
+        'mitra_instansi',
+        'jabatan_praktisi',
+        'tahun_ajaran',
+        'semester_jenis',
+        'semester_angka',
+        'hari_sesi',
+        'waktu_sesi',
+        'peran_pengaju',
+        'jenis_program',
+        'is_external',
+        'status',
+        'status_eksternal',
+        'alasan_penolakan',
+        'akun_generated_info',
+        'catatan_pengaju',
+        'dokumen_bahan_ajar',
+        'file_rps',
+        'file_silabus',
+        'file_modul_1_13',
+        'jumlah_pertemuan_terlaksana',
+        'status_presensi_pijar',
+        'tautan_evaluasi',
+        'link_gdrive_dokumentasi',
+        'status_bap',
+    ];
 
-    protected $guarded = ['id'];
-    
     protected $casts = [
         'tanggal_pengajuan' => 'datetime',
-        'is_external' => 'boolean',
+        'is_external'       => 'boolean',
     ];
 
     public function course()

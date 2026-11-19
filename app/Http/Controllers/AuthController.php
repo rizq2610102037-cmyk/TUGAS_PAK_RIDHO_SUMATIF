@@ -30,10 +30,21 @@ class AuthController extends Controller
 
             $user = Auth::user();
 
-            // Jika dosen/praktisi baru pertama kali login menggunakan sandi awal, wajib reset kata sandi
-            if ($user->must_change_password) {
-                return redirect()->route('password.force_change');
-            }
+// Khusus role dosen (non-praktisi eksternal): wajib login menggunakan email kampus @pradita.ac.id
+if ($user->role === 'dosen' && !str_ends_with(strtolower($user->email), '@pradita.ac.id')) {
+    // Cek apakah email ini terdaftar sebagai praktisi industri eksternal
+    $isPraktisiEksternal = \App\Models\Schedule::where('praktisi_email', $user->email)->exists();
+
+    if (!$isPraktisiEksternal) {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return back()->withErrors([
+            'email' => 'Khusus Dosen wajib login menggunakan email kampus resmi (@pradita.ac.id).',
+        ])->onlyInput('email');
+    }
+}
 
             return match ($user->role) {
                 'admin', 'admin_pijar', 'admin_suar' => redirect()->intended('/pijar/dashboard'),

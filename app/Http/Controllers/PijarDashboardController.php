@@ -719,4 +719,81 @@ public function storeCourse(Request $request)
 
         return back()->with('success', "Berhasil mengimpor {$berhasil} data Master Mata Kuliah dari file Excel/CSV!");
     }
+
+    public function updateSchedule(Request $request, Schedule $schedule)
+    {
+        $request->validate([
+            'status'             => 'required|in:pending_approval,approved,revision_requested,cancelled',
+            'room_id'            => 'nullable|exists:rooms,id',
+            'dosen_email_kampus' => 'nullable|email|max:200',
+            'alasan_penolakan'   => 'nullable|string|max:500',
+        ]);
+
+        $emailKampus = strtolower(trim(
+            $request->dosen_email_kampus
+            ?: $schedule->dosen_email_kampus
+            ?: $schedule->dosen_email
+            ?: ''
+        ));
+
+        $updateData = [
+            'status'             => $request->status,
+            'room_id'            => $request->room_id ?? $schedule->room_id,
+            'dosen_email_kampus' => $emailKampus ?: $schedule->dosen_email_kampus,
+            'dosen_email'        => $emailKampus ?: $schedule->dosen_email,
+            'alasan_penolakan'   => $request->status === 'cancelled' ? $request->alasan_penolakan : null,
+        ];
+
+        // Saat di-ACC: buatkan/aktifkan akun login Dosen memakai Email Kampus
+        if ($request->status === 'approved') {
+            if (!$emailKampus || !str_ends_with($emailKampus, '@pradita.ac.id')) {
+                return back()->withErrors([
+                    'dosen_email_kampus' => 'Email kampus dosen (@pradita.ac.id) wajib diisi sebelum melakukan ACC.',
+                ]);
+            }
+
+            $defaultPassword = 'Pradita@2026';
+
+            $dosenUser = \App\Models\User::firstOrCreate(
+                ['email' => $emailKampus],
+                [
+                    'name'                 => $schedule->dosen_pengajar,
+                    'password'             => \Illuminate\Support\Facades\Hash::make($defaultPassword),
+                    'role'                 => 'dosen',
+                    'prodi'                => $schedule->course->prodi ?? null,
+                    'is_active'            => true,
+                    'must_change_password' => true,
+                ]
+            );
+
+            // Jika akun sudah pernah ada, pastikan aktif
+            if (!$dosenUser->wasRecentlyCreated) {
+                $dosenUser->update(['is_active' => true]);
+            }
+
+            $infoAkun = "Akun Dosen Aktif | Email Kampus: {$emailKampus} | Sandi Awal: {$defaultPassword}";
+
+            // Jika ada praktisi SUAR, buatkan juga akun praktisi
+            if ($schedule->praktisi_email) {
+                $emailPraktisi = strtolower(trim($schedule->praktisi_email));
+                \App\Models\User::firstOrCreate(
+                    ['email' => $emailPraktisi],
+                    [
+                        'name'                 => $schedule->praktisi_nama ?: 'Praktisi Industri',
+                        'password'             => \Illuminate\Support\Facades\Hash::make($defaultPassword),
+                        'role'                 => 'dosen',
+                        'is_active'            => true,
+                        'must_change_password' => true,
+                    ]
+                );
+                $infoAkun .= " • Akun Praktisi: {$emailPraktisi} (Sandi: {$defaultPassword})";
+            }
+
+            $updateData['akun_generated_info'] = $infoAkun;
+        }
+
+        $schedule->update($updateData);
+
+        return back()->with('success', 'Status pengajuan diperbarui' . ($request->status === 'approved' ? ' & akun email kampus dosen telah diaktifkan!' : '!'));
+    }
 }
